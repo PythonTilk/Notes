@@ -372,15 +372,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show view modal
         viewModal.style.display = 'flex';
-        viewModal.classList.add('fade-in');
+        viewModal.classList.add('show');
+        // Force reflow to ensure the transition works
+        viewModal.offsetHeight;
         
         // Add close event listeners
         const closeBtn = viewModal.querySelector('.close-btn');
         const viewCloseBtn = document.getElementById('view-close-btn');
         
         const closeViewModal = () => {
-            viewModal.style.display = 'none';
-            viewModal.classList.remove('fade-in');
+            viewModal.classList.remove('show');
+            // Wait for transition to complete before hiding
+            setTimeout(() => {
+                viewModal.style.display = 'none';
+            }, 300);
         };
         
         closeBtn.onclick = closeViewModal;
