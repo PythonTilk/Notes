@@ -1,10 +1,10 @@
-package notizprojekt.web.dto;
+package com.notevault.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import notizprojekt.web.model.Note;
-import notizprojekt.web.model.User;
+import com.notevault.model.Note;
+import com.notevault.model.User;
 
 @Data
 @NoArgsConstructor

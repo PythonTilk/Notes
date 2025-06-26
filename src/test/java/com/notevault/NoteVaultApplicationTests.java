@@ -1,10 +1,10 @@
-package notizprojekt.web;
+package com.notevault;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class NotizprojektWebApplicationTests {
+class NoteVaultApplicationTests {
 
     @Test
     void contextLoads() {

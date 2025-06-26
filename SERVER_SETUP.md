@@ -1,6 +1,6 @@
 # 🚀 Production Server Setup Guide
 
-Complete guide for deploying ITS-Projekt Note Management System on a production server with SSL, security hardening, and automated management.
+Complete guide for deploying NoteVault Note Management System on a production server with SSL, security hardening, and automated management.
 
 ## 📋 Prerequisites
 

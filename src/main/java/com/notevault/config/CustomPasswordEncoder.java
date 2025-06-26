@@ -1,4 +1,4 @@
-package notizprojekt.web.config;
+package com.notevault.config;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

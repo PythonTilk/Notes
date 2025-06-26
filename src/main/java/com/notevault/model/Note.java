@@ -1,4 +1,4 @@
-package notizprojekt.web.model;
+package com.notevault.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;

@@ -1,8 +1,8 @@
-package notizprojekt.web.service;
+package com.notevault.service;
 
 import lombok.RequiredArgsConstructor;
-import notizprojekt.web.model.User;
-import notizprojekt.web.repository.UserRepository;
+import com.notevault.model.User;
+import com.notevault.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

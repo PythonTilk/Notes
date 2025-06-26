@@ -1,8 +1,8 @@
-package notizprojekt.web.controller;
+package com.notevault.controller;
 
 import lombok.RequiredArgsConstructor;
-import notizprojekt.web.model.Note;
-import notizprojekt.web.service.NoteService;
+import com.notevault.model.Note;
+import com.notevault.service.NoteService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

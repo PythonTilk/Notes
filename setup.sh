@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# ITS-Projekt Unified Setup Script
-# This script handles installation, updates, and management of the ITS-Projekt
+# NoteVault Unified Setup Script
+# This script handles installation, updates, and management of NoteVault
 #
 # Usage:
 #   sudo ./setup.sh                    # Interactive menu
@@ -34,7 +34,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_NAME="ITS-Projekt"
+PROJECT_NAME="NoteVault"
 PROJECT_USER="notizprojekt"
 PROJECT_DIR="/opt/notizprojekt"
 REPO_URL="https://github.com/PythonTilk/Notes.git"
@@ -55,7 +55,7 @@ SKIP_PROMPTS="${SKIP_PROMPTS:-false}"
 print_header() {
     echo -e "${PURPLE}"
     echo "╔══════════════════════════════════════════════════════════════════════════════╗"
-    echo "║                        ITS-Projekt Setup & Management                       ║"
+    echo "║                          NoteVault Setup & Management                       ║"
     echo "║                     Installation, Updates & Administration                  ║"
     echo "╚══════════════════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
@@ -229,9 +229,9 @@ setup_database() {
     mysql -e "FLUSH PRIVILEGES;"
     
     # Import schema if it exists
-    if [[ -f "$PROJECT_DIR/$PROJECT_NAME/its-projekt18.6.sql" ]]; then
+    if [[ -f "$PROJECT_DIR/$PROJECT_NAME/notevault-schema.sql" ]]; then
         log "Importing database schema..."
-        mysql < "$PROJECT_DIR/$PROJECT_NAME/its-projekt18.6.sql"
+        mysql < "$PROJECT_DIR/$PROJECT_NAME/notevault-schema.sql"
     fi
     
     success "Database setup completed"
@@ -318,7 +318,7 @@ setup_service() {
     
     cat > "/etc/systemd/system/$SERVICE_NAME.service" << EOF
 [Unit]
-Description=ITS-Projekt Note Management System
+Description=NoteVault Note Management System
 After=network.target mysql.service
 
 [Service]
@@ -486,7 +486,7 @@ get_input() {
 # Installation function
 install_application() {
     print_header
-    log "Starting ITS-Projekt installation..."
+    log "Starting NoteVault installation..."
     
     detect_os
     get_input
@@ -507,7 +507,7 @@ install_application() {
     
     success "Installation completed successfully!"
     echo
-    echo -e "${GREEN}🎉 ITS-Projekt is now running!${NC}"
+    echo -e "${GREEN}🎉 NoteVault is now running!${NC}"
     echo -e "${CYAN}📱 Access your application at: https://$DOMAIN${NC}"
     echo -e "${YELLOW}📋 Default test account: testuser123 / password123${NC}"
     echo
@@ -551,7 +551,7 @@ update_application() {
 show_status() {
     STATUS=$(get_status)
     
-    echo -e "${BLUE}ITS-Projekt Status:${NC}"
+    echo -e "${BLUE}NoteVault Status:${NC}"
     echo "===================="
     
     case $STATUS in

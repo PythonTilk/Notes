@@ -1,4 +1,4 @@
-# ITS-Projekt - Note Management System
+# NoteVault - Note Management System
 
 A modern, feature-rich note-taking application built with Spring Boot. Create, organize, and share notes with advanced features like rich text editing, image uploads, and collaborative sharing.
 

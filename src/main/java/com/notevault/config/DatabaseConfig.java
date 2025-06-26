@@ -1,4 +1,4 @@
-package notizprojekt.web.config;
+package com.notevault.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

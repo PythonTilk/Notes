@@ -1,10 +1,10 @@
-package notizprojekt.web.service;
+package com.notevault.service;
 
 import lombok.RequiredArgsConstructor;
-import notizprojekt.web.model.Note;
-import notizprojekt.web.model.User;
-import notizprojekt.web.repository.NoteRepository;
-import notizprojekt.web.repository.UserRepository;
+import com.notevault.model.Note;
+import com.notevault.model.User;
+import com.notevault.repository.NoteRepository;
+import com.notevault.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

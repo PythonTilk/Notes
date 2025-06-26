@@ -1,9 +1,9 @@
-package notizprojekt.web.controller.api;
+package com.notevault.controller.api;
 
 import lombok.RequiredArgsConstructor;
-import notizprojekt.web.model.User;
-import notizprojekt.web.service.UserService;
-import notizprojekt.web.service.NoteService;
+import com.notevault.model.User;
+import com.notevault.service.UserService;
+import com.notevault.service.NoteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

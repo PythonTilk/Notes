@@ -1,6 +1,6 @@
-package notizprojekt.web.repository;
+package com.notevault.repository;
 
-import notizprojekt.web.model.User;
+import com.notevault.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

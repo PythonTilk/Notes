@@ -1,4 +1,4 @@
-package notizprojekt.web.config;
+package com.notevault.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
