@@ -14,20 +14,19 @@ Complete guide for deploying ITS-Projekt Note Management System on a production 
 ### One-Command Setup
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh | sudo bash -s install
+bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh) install
 ```
 
 ### Automated Setup (No Prompts)
 
 ```bash
-DOMAIN="your-domain.com" EMAIL="your-email@example.com" DB_PASSWORD="your-secure-password" SKIP_PROMPTS="true" curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh | sudo bash -s install
+DOMAIN="your-domain.com" EMAIL="your-email@example.com" DB_PASSWORD="your-secure-password" SKIP_PROMPTS="true" bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh) install
 ```
 
 ### Interactive Menu
 
 ```bash
-# Download and run with interactive menu
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh | sudo bash
+bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh)
 ```
 
 ### Manual Installation

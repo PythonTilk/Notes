@@ -190,7 +190,7 @@ sudo ./setup.sh
 sudo ./setup.sh install
 
 # One-liner (replace with your repository URL)
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh | sudo bash -s install
+sudo bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh) install
 ```
 
 ## 🛡️ Technology Stack
