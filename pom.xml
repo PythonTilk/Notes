@@ -8,11 +8,11 @@
         <version>2.7.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>notizprojekt</groupId>
-    <artifactId>notizprojekt-web</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>notizprojekt-web</name>
-    <description>Web version of the Notiz Projekt</description>
+    <groupId>com.notevault</groupId>
+    <artifactId>notevault</artifactId>
+    <version>1.0.0</version>
+    <name>NoteVault</name>
+    <description>NoteVault - Secure and intuitive note-taking application</description>
     
     <properties>
         <java.version>17</java.version>
