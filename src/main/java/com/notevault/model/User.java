@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,9 @@ public class User {
     @Column(name = "passwort", nullable = false, length = 60)
     private String password;
 
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    private String email;
+
     @Column(name = "display_name", length = 50)
     private String displayName;
 
@@ -38,6 +42,33 @@ public class User {
 
     @Column(name = "profile_picture", length = 255)
     private String profilePicture;
+
+    @Column(name = "is_admin", nullable = false)
+    private Boolean isAdmin = false;
+
+    @Column(name = "is_banned", nullable = false)
+    private Boolean isBanned = false;
+
+    @Column(name = "email_verified", nullable = false)
+    private Boolean emailVerified = false;
+
+    @Column(name = "verification_token", length = 100)
+    private String verificationToken;
+
+    @Column(name = "verification_token_expiry")
+    private LocalDateTime verificationTokenExpiry;
+
+    @Column(name = "password_reset_token", length = 100)
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
