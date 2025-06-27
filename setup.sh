@@ -400,10 +400,31 @@ build_application() {
     fi
     
     # Verify JAR file was created
+    log "Checking for JAR file in: $(pwd)/target/"
+    ls -la target/ 2>/dev/null || true
+    
     if [[ ! -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
-        error "Build failed - JAR file not found"
-        cd "$CURRENT_DIR"
-        exit 1
+        # Try to find the JAR file using find
+        log "JAR file not found at expected path, searching for it..."
+        JAR_PATH=$(find "$(pwd)/target" -name "*.jar" -type f | grep -v ".mvn" | head -1)
+        
+        if [[ -n "$JAR_PATH" ]]; then
+            log "Found JAR file at: $JAR_PATH"
+            # If the JAR file exists but with a different name, create a symlink to the expected name
+            ln -sf "$JAR_PATH" "target/notizprojekt-web-0.0.1-SNAPSHOT.jar"
+            log "Created symlink to the JAR file"
+        else
+            error "Build failed - JAR file not found"
+            cd "$CURRENT_DIR"
+            exit 1
+        fi
+    else
+        log "JAR file found at expected location"
+    fi
+    
+    # Ensure correct permissions on the JAR file
+    if [[ -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
+        chown "$PROJECT_USER:$PROJECT_USER" "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" 2>/dev/null || true
     fi
     
     # Return to original directory
