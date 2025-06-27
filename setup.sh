@@ -316,8 +316,30 @@ build_application() {
         create_backup
     fi
     
-    # Build with Maven
-    sudo -u "$PROJECT_USER" ./mvnw clean package -DskipTests
+    # Ensure mvnw is executable
+    chmod +x ./mvnw 2>/dev/null || true
+    
+    # Build with Maven - try multiple methods
+    if [[ -f "./mvnw" ]]; then
+        log "Building with Maven wrapper..."
+        sudo -u "$PROJECT_USER" ./mvnw clean package -DskipTests || {
+            log "Maven wrapper failed, trying with system Maven..."
+            if command -v mvn &> /dev/null; then
+                sudo -u "$PROJECT_USER" mvn clean package -DskipTests
+            else
+                error "Both Maven wrapper and system Maven failed"
+                exit 1
+            fi
+        }
+    else
+        log "Maven wrapper not found, trying with system Maven..."
+        if command -v mvn &> /dev/null; then
+            sudo -u "$PROJECT_USER" mvn clean package -DskipTests
+        else
+            error "Maven not found. Please install Maven or fix the Maven wrapper"
+            exit 1
+        fi
+    fi
     
     # Verify JAR file was created
     if [[ ! -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
