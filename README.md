@@ -183,8 +183,14 @@ For production server setup with SSL, domain configuration, and security hardeni
 ### Quick Production Install
 
 ```bash
-# One-liner
-sudo bash <(curl -Ss https://raw.githubusercontent.com/PythonTilk/Notes/refs/heads/main/setup.sh || wget -O - https://raw.githubusercontent.com/PythonTilk/Notes/refs/heads/main/setup.sh) install
+# One-liner (Method 1)
+curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh | sudo bash -s install
+
+# One-liner (Method 2)
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh)" install
+
+# One-liner (Method 3 - with wget fallback)
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh 2>/dev/null || wget -qO- https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh)" install
 ```
 
 ## 🛡️ Technology Stack
