@@ -15,6 +15,8 @@
 #
 # One-liner installation:
 #   curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh | sudo bash -s install
+#   OR
+#   sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh)" install
 #
 # Environment Variables (for automated install):
 #   DOMAIN="your-domain.com"        # Domain name
