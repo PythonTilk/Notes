@@ -309,15 +309,31 @@ setup_repository() {
 build_application() {
     log "Building application..."
     
-    cd "$PROJECT_DIR/$PROJECT_NAME"
+    # Store current directory
+    CURRENT_DIR=$(pwd)
+    
+    # Make sure we're in the project directory
+    cd "$PROJECT_DIR/$PROJECT_NAME" || {
+        error "Cannot change to project directory: $PROJECT_DIR/$PROJECT_NAME"
+        exit 1
+    }
     
     # Create backup if updating
     if [[ -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
+        # Call create_backup but return to project directory after
         create_backup
+        cd "$PROJECT_DIR/$PROJECT_NAME" || {
+            error "Cannot return to project directory after backup"
+            exit 1
+        }
     fi
     
+    log "Building from directory: $(pwd)"
+    
     # Ensure mvnw is executable
-    chmod +x ./mvnw 2>/dev/null || true
+    if [[ -f "./mvnw" ]]; then
+        chmod +x ./mvnw 2>/dev/null || true
+    fi
     
     # Build with Maven - try multiple methods
     if [[ -f "./mvnw" ]]; then
@@ -328,6 +344,7 @@ build_application() {
                 sudo -u "$PROJECT_USER" mvn clean package -DskipTests
             else
                 error "Both Maven wrapper and system Maven failed"
+                cd "$CURRENT_DIR"
                 exit 1
             fi
         }
@@ -337,6 +354,7 @@ build_application() {
             sudo -u "$PROJECT_USER" mvn clean package -DskipTests
         else
             error "Maven not found. Please install Maven or fix the Maven wrapper"
+            cd "$CURRENT_DIR"
             exit 1
         fi
     fi
@@ -344,8 +362,12 @@ build_application() {
     # Verify JAR file was created
     if [[ ! -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
         error "Build failed - JAR file not found"
+        cd "$CURRENT_DIR"
         exit 1
     fi
+    
+    # Return to original directory
+    cd "$CURRENT_DIR"
     
     success "Application built successfully"
 }
@@ -508,13 +530,21 @@ setup_firewall() {
 create_backup() {
     log "Creating backup..."
     
+    # Store current directory
+    BACKUP_CURRENT_DIR=$(pwd)
+    
+    # Create backup directory
     mkdir -p "$BACKUP_DIR"
     
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     BACKUP_FILE="$BACKUP_DIR/backup_$TIMESTAMP.tar.gz"
     
     # Backup application and database
-    cd "$PROJECT_DIR"
+    cd "$PROJECT_DIR" || {
+        error "Cannot change to project directory for backup: $PROJECT_DIR"
+        return 1
+    }
+    
     tar -czf "$BACKUP_FILE" \
         --exclude="$PROJECT_NAME/.git" \
         --exclude="$PROJECT_NAME/target" \
@@ -526,12 +556,23 @@ create_backup() {
         mysqldump -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" > "$BACKUP_DIR/db_backup_$TIMESTAMP.sql" 2>/dev/null || true
     fi
     
-    chown -R "$PROJECT_USER:$PROJECT_USER" "$BACKUP_DIR"
+    chown -R "$PROJECT_USER:$PROJECT_USER" "$BACKUP_DIR" 2>/dev/null || true
     
     # Keep only last 10 backups
-    cd "$BACKUP_DIR"
+    cd "$BACKUP_DIR" || {
+        error "Cannot change to backup directory: $BACKUP_DIR"
+        cd "$BACKUP_CURRENT_DIR" 2>/dev/null || true
+        return 1
+    }
+    
     ls -t backup_*.tar.gz 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
     ls -t db_backup_*.sql 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
+    
+    # Return to original directory
+    cd "$BACKUP_CURRENT_DIR" || {
+        error "Cannot return to original directory after backup"
+        return 1
+    }
     
     success "Backup created: $BACKUP_FILE"
 }
