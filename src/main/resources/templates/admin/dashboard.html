@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NoteVault</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+        }
+        
+        .admin-sidebar h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .admin-sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .admin-sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .admin-sidebar a {
+            display: block;
+            padding: 10px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .admin-sidebar a:hover, .admin-sidebar a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .admin-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+        
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .recent-activity {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        
+        .activity-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark mode toggle -->
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2"/>
+            <path d="M12 20v2"/>
+            <path d="m4.93 4.93 1.41 1.41"/>
+            <path d="m17.66 17.66 1.41 1.41"/>
+            <path d="M2 12h2"/>
+            <path d="M20 12h2"/>
+            <path d="m6.34 17.66-1.41 1.41"/>
+            <path d="m19.07 4.93-1.41 1.41"/>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" style="display: none;">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            <path d="M19 3v4"/>
+            <path d="M21 5h-4"/>
+        </svg>
+    </button>
+    
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <h2>Admin Panel</h2>
+            <ul>
+                <li><a href="/admin" class="active">Dashboard</a></li>
+                <li><a href="/admin/users">User Management</a></li>
+                <li><a href="/admin/banned-emails">Banned Emails</a></li>
+                <li><a href="/admin/notes">Notes Management</a></li>
+                <li><a href="/admin/settings">System Settings</a></li>
+                <li><a href="/board">Back to App</a></li>
+            </ul>
+        </div>
+        
+        <div class="admin-content">
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="refresh-stats">Refresh Stats</button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="value" id="total-users">--</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Total Notes</h3>
+                    <div class="value" id="total-notes">--</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Public Notes</h3>
+                    <div class="value" id="public-notes">--</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Banned Users</h3>
+                    <div class="value" id="banned-users">--</div>
+                </div>
+            </div>
+            
+            <div class="recent-activity">
+                <h2>Recent Activity</h2>
+                <ul class="activity-list" id="activity-list">
+                    <li class="activity-item">Loading activity data...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardStats();
+            loadRecentActivity();
+            
+            document.getElementById('refresh-stats').addEventListener('click', function() {
+                loadDashboardStats();
+                loadRecentActivity();
+            });
+        });
+        
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('total-users').textContent = data.totalUsers || 0;
+                    document.getElementById('total-notes').textContent = data.totalNotes || 0;
+                    document.getElementById('public-notes').textContent = data.publicNotes || 0;
+                    document.getElementById('banned-users').textContent = data.bannedUsers || 0;
+                } else {
+                    console.error('Failed to load stats:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+        
+        async function loadRecentActivity() {
+            try {
+                const response = await fetch('/api/admin/recent-activity');
+                const data = await response.json();
+                
+                if (data.success && data.activities && data.activities.length > 0) {
+                    const activityList = document.getElementById('activity-list');
+                    activityList.innerHTML = '';
+                    
+                    data.activities.forEach(activity => {
+                        const li = document.createElement('li');
+                        li.className = 'activity-item';
+                        
+                        const time = new Date(activity.timestamp).toLocaleString();
+                        
+                        li.innerHTML = `
+                            <div>${activity.description}</div>
+                            <div class="activity-time">${time}</div>
+                        `;
+                        
+                        activityList.appendChild(li);
+                    });
+                } else {
+                    document.getElementById('activity-list').innerHTML = '<li class="activity-item">No recent activity found</li>';
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('activity-list').innerHTML = '<li class="activity-item">Failed to load activity data</li>';
+            }
+        }
+    </script>
+</body>
+</html>

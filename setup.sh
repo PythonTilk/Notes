@@ -52,6 +52,12 @@ DOMAIN="${DOMAIN:-}"
 EMAIL="${EMAIL:-}"
 DB_PASSWORD="${DB_PASSWORD:-}"
 SKIP_PROMPTS="${SKIP_PROMPTS:-false}"
+MAIL_HOST="${MAIL_HOST:-smtp.gmail.com}"
+MAIL_PORT="${MAIL_PORT:-587}"
+MAIL_USERNAME="${MAIL_USERNAME:-}"
+MAIL_PASSWORD="${MAIL_PASSWORD:-}"
+BASE_URL="${BASE_URL:-}"
+DB_ENCRYPTION_KEY="${DB_ENCRYPTION_KEY:-}"
 
 # Functions
 print_header() {
@@ -243,6 +249,67 @@ create_user() {
 }
 
 # Setup database
+# Prompt for configuration values
+prompt_for_config() {
+    log "Configuring application settings..."
+    
+    # Skip prompts if requested
+    if [[ "$SKIP_PROMPTS" == "true" ]]; then
+        info "Skipping configuration prompts as requested"
+        
+        # Generate random encryption key if not provided
+        if [[ -z "$DB_ENCRYPTION_KEY" ]]; then
+            DB_ENCRYPTION_KEY=$(openssl rand -hex 16)
+            info "Generated database encryption key"
+        fi
+        
+        return
+    fi
+    
+    # Domain configuration
+    if [[ -z "$DOMAIN" ]]; then
+        read -p "Enter domain name (e.g., example.com): " DOMAIN
+    fi
+    
+    # Email configuration
+    if [[ -z "$MAIL_HOST" ]]; then
+        read -p "Enter SMTP server host [smtp.gmail.com]: " input
+        MAIL_HOST=${input:-smtp.gmail.com}
+    fi
+    
+    if [[ -z "$MAIL_PORT" ]]; then
+        read -p "Enter SMTP server port [587]: " input
+        MAIL_PORT=${input:-587}
+    fi
+    
+    if [[ -z "$MAIL_USERNAME" ]]; then
+        read -p "Enter email address for sending notifications: " MAIL_USERNAME
+    fi
+    
+    if [[ -z "$MAIL_PASSWORD" ]]; then
+        read -s -p "Enter email password or app password: " MAIL_PASSWORD
+        echo
+    fi
+    
+    if [[ -z "$BASE_URL" ]]; then
+        if [[ -n "$DOMAIN" ]]; then
+            suggested_url="https://$DOMAIN"
+        else
+            suggested_url="http://localhost:8080"
+        fi
+        read -p "Enter base URL for application [$suggested_url]: " input
+        BASE_URL=${input:-$suggested_url}
+    fi
+    
+    # Database encryption key
+    if [[ -z "$DB_ENCRYPTION_KEY" ]]; then
+        DB_ENCRYPTION_KEY=$(openssl rand -hex 16)
+        info "Generated database encryption key"
+    fi
+    
+    success "Configuration completed"
+}
+
 setup_database() {
     log "Setting up database..."
     
@@ -324,17 +391,22 @@ build_application() {
     # Create backup if updating
     if [[ -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
         log "Creating backup before building..."
+        
+        # Save current directory path
+        local BUILD_DIR=$(pwd)
+        
         # Call create_backup
         create_backup
         
-        # Double-check we're back in the project directory
-        if [[ "$(pwd)" != "$PROJECT_DIR/$PROJECT_NAME" ]]; then
-            log "Returning to project directory after backup..."
+        # Always return to the project directory after backup
+        log "Returning to project directory after backup..."
+        cd "$BUILD_DIR" || {
+            error "Cannot return to project directory after backup"
             cd "$PROJECT_DIR/$PROJECT_NAME" || {
-                error "Cannot return to project directory after backup"
+                error "Cannot return to project directory using absolute path"
                 exit 1
             }
-        fi
+        }
         
         log "Directory after backup: $(pwd)"
     fi
@@ -453,10 +525,61 @@ DOMAIN=$DOMAIN
 EMAIL=$EMAIL
 DB_PASSWORD=$DB_PASSWORD
 JAVA_OPTS=$JAVA_OPTS
+MAIL_HOST=$MAIL_HOST
+MAIL_PORT=$MAIL_PORT
+MAIL_USERNAME=$MAIL_USERNAME
+MAIL_PASSWORD=$MAIL_PASSWORD
+BASE_URL=$BASE_URL
+DB_ENCRYPTION_KEY=$DB_ENCRYPTION_KEY
 EOF
     
     chown "$PROJECT_USER:$PROJECT_USER" "$PROJECT_DIR/.env"
     chmod 600 "$PROJECT_DIR/.env"
+    
+    # Create application.properties file
+    mkdir -p "$PROJECT_DIR/$PROJECT_NAME/src/main/resources"
+    cat > "$PROJECT_DIR/$PROJECT_NAME/src/main/resources/application.properties" << EOF
+# Database Configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/notizprojekt?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=notizprojekt
+spring.datasource.password=$DB_PASSWORD
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.show-sql=false
+
+# Server Configuration
+server.port=8080
+server.servlet.context-path=/
+
+# File Upload Configuration
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+file.upload-dir=$PROJECT_DIR/$PROJECT_NAME/uploads
+
+# Email Configuration
+spring.mail.host=$MAIL_HOST
+spring.mail.port=$MAIL_PORT
+spring.mail.username=$MAIL_USERNAME
+spring.mail.password=$MAIL_PASSWORD
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Application Configuration
+app.base-url=$BASE_URL
+app.email.from=$MAIL_USERNAME
+app.email.verification-expiration=86400000
+app.email.reset-expiration=3600000
+
+# Database Encryption Configuration
+app.db.encryption.key=$DB_ENCRYPTION_KEY
+app.db.encryption.enabled=true
+EOF
+
+    chown "$PROJECT_USER:$PROJECT_USER" "$PROJECT_DIR/$PROJECT_NAME/src/main/resources/application.properties"
+    chmod 600 "$PROJECT_DIR/$PROJECT_NAME/src/main/resources/application.properties"
     
     success "Configuration setup completed"
 }
@@ -671,6 +794,7 @@ install_application() {
     
     detect_os
     get_input
+    prompt_for_config
     
     install_dependencies
     create_user
