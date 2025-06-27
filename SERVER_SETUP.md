@@ -14,19 +14,7 @@ Complete guide for deploying NoteVault Note Management System on a production se
 ### One-Command Setup
 
 ```bash
-bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh) install
-```
-
-### Automated Setup (No Prompts)
-
-```bash
-DOMAIN="your-domain.com" EMAIL="your-email@example.com" DB_PASSWORD="your-secure-password" SKIP_PROMPTS="true" bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh) install
-```
-
-### Interactive Menu
-
-```bash
-bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh)
+sudo bash <(curl -Ss https://raw.githubusercontent.com/PythonTilk/Notes/refs/heads/main/setup.sh || wget -O - https://raw.githubusercontent.com/PythonTilk/Notes/refs/heads/main/setup.sh) install
 ```
 
 ### Manual Installation
