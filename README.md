@@ -183,14 +183,8 @@ For production server setup with SSL, domain configuration, and security hardeni
 ### Quick Production Install
 
 ```bash
-# Interactive setup menu
-sudo ./setup.sh
-
-# Direct installation
-sudo ./setup.sh install
-
-# One-liner (replace with your repository URL)
-sudo bash <(curl -Ss https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh || wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/setup.sh) install
+# One-liner
+sudo bash <(curl -Ss https://raw.githubusercontent.com/PythonTilk/Notes/refs/heads/main/setup.sh || wget -O - https://raw.githubusercontent.com/PythonTilk/Notes/refs/heads/main/setup.sh) install
 ```
 
 ## 🛡️ Technology Stack
