@@ -311,6 +311,7 @@ build_application() {
     
     # Store current directory
     CURRENT_DIR=$(pwd)
+    log "Current directory before build: $CURRENT_DIR"
     
     # Make sure we're in the project directory
     cd "$PROJECT_DIR/$PROJECT_NAME" || {
@@ -318,14 +319,41 @@ build_application() {
         exit 1
     }
     
+    log "Changed to project directory: $(pwd)"
+    
     # Create backup if updating
     if [[ -f "target/notizprojekt-web-0.0.1-SNAPSHOT.jar" ]]; then
-        # Call create_backup but return to project directory after
+        log "Creating backup before building..."
+        # Call create_backup
         create_backup
+        
+        # Double-check we're back in the project directory
+        if [[ "$(pwd)" != "$PROJECT_DIR/$PROJECT_NAME" ]]; then
+            log "Returning to project directory after backup..."
+            cd "$PROJECT_DIR/$PROJECT_NAME" || {
+                error "Cannot return to project directory after backup"
+                exit 1
+            }
+        fi
+        
+        log "Directory after backup: $(pwd)"
+    fi
+    
+    # Verify we're in the project directory with the POM file
+    if [[ ! -f "pom.xml" ]]; then
+        error "POM file not found in current directory: $(pwd)"
+        log "Attempting to return to project directory..."
         cd "$PROJECT_DIR/$PROJECT_NAME" || {
-            error "Cannot return to project directory after backup"
+            error "Cannot return to project directory"
             exit 1
         }
+        
+        if [[ ! -f "pom.xml" ]]; then
+            error "POM file still not found after directory correction"
+            exit 1
+        fi
+        
+        log "Successfully returned to project directory with POM file"
     fi
     
     log "Building from directory: $(pwd)"
@@ -351,6 +379,18 @@ build_application() {
     else
         log "Maven wrapper not found, trying with system Maven..."
         if command -v mvn &> /dev/null; then
+            # Verify we're still in the project directory
+            if [[ ! -f "pom.xml" ]]; then
+                error "POM file not found before running Maven"
+                log "Current directory: $(pwd)"
+                log "Attempting to return to project directory..."
+                cd "$PROJECT_DIR/$PROJECT_NAME" || {
+                    error "Cannot return to project directory"
+                    exit 1
+                }
+                log "Returned to: $(pwd)"
+            fi
+            
             sudo -u "$PROJECT_USER" mvn clean package -DskipTests
         else
             error "Maven not found. Please install Maven or fix the Maven wrapper"
@@ -368,6 +408,7 @@ build_application() {
     
     # Return to original directory
     cd "$CURRENT_DIR"
+    log "Returned to original directory: $CURRENT_DIR"
     
     success "Application built successfully"
 }
@@ -532,6 +573,7 @@ create_backup() {
     
     # Store current directory
     BACKUP_CURRENT_DIR=$(pwd)
+    log "Current directory before backup: $BACKUP_CURRENT_DIR"
     
     # Create backup directory
     mkdir -p "$BACKUP_DIR"
@@ -559,21 +601,25 @@ create_backup() {
     chown -R "$PROJECT_USER:$PROJECT_USER" "$BACKUP_DIR" 2>/dev/null || true
     
     # Keep only last 10 backups
-    cd "$BACKUP_DIR" || {
-        error "Cannot change to backup directory: $BACKUP_DIR"
-        cd "$BACKUP_CURRENT_DIR" 2>/dev/null || true
-        return 1
-    }
-    
-    ls -t backup_*.tar.gz 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
-    ls -t db_backup_*.sql 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
+    # IMPORTANT: We're NOT changing to the backup directory anymore
+    # This was causing the issue with Maven not finding the POM file
+    find "$BACKUP_DIR" -name "backup_*.tar.gz" -type f -printf "%T@ %p\n" | sort -nr | tail -n +11 | cut -d' ' -f2- | xargs rm -f 2>/dev/null || true
+    find "$BACKUP_DIR" -name "db_backup_*.sql" -type f -printf "%T@ %p\n" | sort -nr | tail -n +11 | cut -d' ' -f2- | xargs rm -f 2>/dev/null || true
     
     # Return to original directory
     cd "$BACKUP_CURRENT_DIR" || {
         error "Cannot return to original directory after backup"
+        # If we're called from build_application, make sure we return to the project directory
+        if [[ "${FUNCNAME[1]}" == "build_application" ]]; then
+            cd "$PROJECT_DIR/$PROJECT_NAME" || {
+                error "Cannot return to project directory after backup"
+                exit 1
+            }
+        fi
         return 1
     }
     
+    log "Current directory after backup: $(pwd)"
     success "Backup created: $BACKUP_FILE"
 }
 
