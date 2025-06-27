@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - NoteVault</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+        }
+        
+        .admin-sidebar h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .admin-sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .admin-sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .admin-sidebar a {
+            display: block;
+            padding: 10px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .admin-sidebar a:hover, .admin-sidebar a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .admin-content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px 0 0 5px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+        
+        .users-table th, .users-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .users-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .users-table tr:hover {
+            background-color: var(--bg-color);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-banned {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .status-unverified {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-admin {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .pagination button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 6px var(--shadow-lg);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark mode toggle -->
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2"/>
+            <path d="M12 20v2"/>
+            <path d="m4.93 4.93 1.41 1.41"/>
+            <path d="m17.66 17.66 1.41 1.41"/>
+            <path d="M2 12h2"/>
+            <path d="M20 12h2"/>
+            <path d="m6.34 17.66-1.41 1.41"/>
+            <path d="m19.07 4.93-1.41 1.41"/>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" style="display: none;">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            <path d="M19 3v4"/>
+            <path d="M21 5h-4"/>
+        </svg>
+    </button>
+    
+    <div class="admin-container">
+        <div class="admin-sidebar">
+            <h2>Admin Panel</h2>
+            <ul>
+                <li><a href="/admin">Dashboard</a></li>
+                <li><a href="/admin/users" class="active">User Management</a></li>
+                <li><a href="/admin/banned-emails">Banned Emails</a></li>
+                <li><a href="/admin/notes">Notes Management</a></li>
+                <li><a href="/admin/settings">System Settings</a></li>
+                <li><a href="/board">Back to App</a></li>
+            </ul>
+        </div>
+        
+        <div class="admin-content">
+            <div class="admin-header">
+                <h1>User Management</h1>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="refresh-users">Refresh</button>
+                </div>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by username or email...">
+                <button id="search-button">Search</button>
+            </div>
+            
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading users...</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="pagination" id="pagination">
+                <!-- Pagination buttons will be added here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ban User Modal -->
+    <div class="modal" id="ban-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ban User</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to ban <span id="ban-username"></span>?</p>
+                <div class="form-group">
+                    <label for="ban-reason">Reason for ban:</label>
+                    <textarea id="ban-reason" rows="3" placeholder="Enter reason for ban"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ban-email-too">
+                        <input type="checkbox" id="ban-email-too"> Also ban email address
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Cancel</button>
+                <button class="btn btn-danger" id="confirm-ban">Ban User</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Make Admin Modal -->
+    <div class="modal" id="admin-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change Admin Status</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="admin-message">Are you sure you want to make <span id="admin-username"></span> an administrator?</p>
+                <p>This will grant the user full administrative privileges.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Cancel</button>
+                <button class="btn btn-primary" id="confirm-admin">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Verify Email Modal -->
+    <div class="modal" id="verify-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Verify Email</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to manually verify <span id="verify-username"></span>'s email?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Cancel</button>
+                <button class="btn btn-primary" id="confirm-verify">Verify Email</button>
+            </div>
+        </div>
+    </div>
+    
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentPage = 1;
+            const pageSize = 10;
+            let totalPages = 1;
+            let currentUsers = [];
+            let selectedUserId = null;
+            
+            // Initial load
+            loadUsers(currentPage);
+            
+            // Event listeners
+            document.getElementById('refresh-users').addEventListener('click', function() {
+                loadUsers(currentPage);
+            });
+            
+            document.getElementById('search-button').addEventListener('click', function() {
+                searchUsers();
+            });
+            
+            document.getElementById('search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchUsers();
+                }
+            });
+            
+            // Modal close buttons
+            document.querySelectorAll('.modal-close, .modal-close-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    closeAllModals();
+                });
+            });
+            
+            // Ban user confirmation
+            document.getElementById('confirm-ban').addEventListener('click', function() {
+                const reason = document.getElementById('ban-reason').value;
+                const banEmail = document.getElementById('ban-email-too').checked;
+                
+                if (selectedUserId) {
+                    banUser(selectedUserId, reason, banEmail);
+                }
+            });
+            
+            // Admin status confirmation
+            document.getElementById('confirm-admin').addEventListener('click', function() {
+                if (selectedUserId) {
+                    const user = currentUsers.find(u => u.id === selectedUserId);
+                    toggleAdminStatus(selectedUserId, !user.admin);
+                }
+            });
+            
+            // Verify email confirmation
+            document.getElementById('confirm-verify').addEventListener('click', function() {
+                if (selectedUserId) {
+                    verifyUserEmail(selectedUserId);
+                }
+            });
+            
+            async function loadUsers(page) {
+                try {
+                    const response = await fetch(`/api/admin/users?page=${page - 1}&size=${pageSize}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        currentUsers = data.users;
+                        totalPages = data.totalPages;
+                        renderUsers(data.users);
+                        renderPagination(page, data.totalPages);
+                    } else {
+                        showError('Failed to load users: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                    showError('Error loading users. Please try again.');
+                }
+            }
+            
+            async function searchUsers() {
+                const searchTerm = document.getElementById('search-input').value.trim();
+                
+                if (!searchTerm) {
+                    loadUsers(1);
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/admin/users/search?term=${encodeURIComponent(searchTerm)}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        currentUsers = data.users;
+                        renderUsers(data.users);
+                        document.getElementById('pagination').innerHTML = '';
+                    } else {
+                        showError('Search failed: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error searching users:', error);
+                    showError('Error searching users. Please try again.');
+                }
+            }
+            
+            function renderUsers(users) {
+                const tableBody = document.getElementById('users-table-body');
+                
+                if (!users || users.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No users found</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = '';
+                
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    
+                    // Determine user status
+                    let statusClass = 'status-active';
+                    let statusText = 'Active';
+                    
+                    if (user.banned) {
+                        statusClass = 'status-banned';
+                        statusText = 'Banned';
+                    } else if (!user.emailVerified) {
+                        statusClass = 'status-unverified';
+                        statusText = 'Unverified';
+                    } else if (user.admin) {
+                        statusClass = 'status-admin';
+                        statusText = 'Admin';
+                    }
+                    
+                    const createdDate = new Date(user.createdAt).toLocaleDateString();
+                    
+                    tr.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${createdDate}</td>
+                        <td class="action-buttons">
+                            ${!user.banned ? 
+                                `<button class="btn btn-sm btn-danger ban-btn" data-id="${user.id}" data-username="${user.username}">Ban</button>` : 
+                                `<button class="btn btn-sm btn-primary unban-btn" data-id="${user.id}">Unban</button>`
+                            }
+                            ${!user.emailVerified ? 
+                                `<button class="btn btn-sm btn-secondary verify-btn" data-id="${user.id}" data-username="${user.username}">Verify</button>` : 
+                                ''
+                            }
+                            <button class="btn btn-sm ${user.admin ? 'btn-danger' : 'btn-secondary'} admin-btn" data-id="${user.id}" data-username="${user.username}" data-admin="${user.admin}">
+                                ${user.admin ? 'Remove Admin' : 'Make Admin'}
+                            </button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(tr);
+                });
+                
+                // Add event listeners to action buttons
+                document.querySelectorAll('.ban-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-id');
+                        const username = this.getAttribute('data-username');
+                        openBanModal(userId, username);
+                    });
+                });
+                
+                document.querySelectorAll('.unban-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-id');
+                        unbanUser(userId);
+                    });
+                });
+                
+                document.querySelectorAll('.admin-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-id');
+                        const username = this.getAttribute('data-username');
+                        const isAdmin = this.getAttribute('data-admin') === 'true';
+                        openAdminModal(userId, username, isAdmin);
+                    });
+                });
+                
+                document.querySelectorAll('.verify-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-id');
+                        const username = this.getAttribute('data-username');
+                        openVerifyModal(userId, username);
+                    });
+                });
+            }
+            
+            function renderPagination(currentPage, totalPages) {
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = '';
+                
+                if (totalPages <= 1) return;
+                
+                // Previous button
+                const prevButton = document.createElement('button');
+                prevButton.textContent = '←';
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        loadUsers(currentPage - 1);
+                    }
+                });
+                pagination.appendChild(prevButton);
+                
+                // Page buttons
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, startPage + 4);
+                
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    pageButton.classList.toggle('active', i === currentPage);
+                    pageButton.addEventListener('click', function() {
+                        loadUsers(i);
+                    });
+                    pagination.appendChild(pageButton);
+                }
+                
+                // Next button
+                const nextButton = document.createElement('button');
+                nextButton.textContent = '→';
+                nextButton.disabled = currentPage === totalPages;
+                nextButton.addEventListener('click', function() {
+                    if (currentPage < totalPages) {
+                        loadUsers(currentPage + 1);
+                    }
+                });
+                pagination.appendChild(nextButton);
+            }
+            
+            function openBanModal(userId, username) {
+                selectedUserId = userId;
+                document.getElementById('ban-username').textContent = username;
+                document.getElementById('ban-reason').value = '';
+                document.getElementById('ban-email-too').checked = false;
+                document.getElementById('ban-modal').style.display = 'flex';
+            }
+            
+            function openAdminModal(userId, username, isAdmin) {
+                selectedUserId = userId;
+                document.getElementById('admin-username').textContent = username;
+                
+                if (isAdmin) {
+                    document.getElementById('admin-message').textContent = `Are you sure you want to remove administrator privileges from ${username}?`;
+                    document.getElementById('confirm-admin').textContent = 'Remove Admin';
+                } else {
+                    document.getElementById('admin-message').textContent = `Are you sure you want to make ${username} an administrator?`;
+                    document.getElementById('confirm-admin').textContent = 'Make Admin';
+                }
+                
+                document.getElementById('admin-modal').style.display = 'flex';
+            }
+            
+            function openVerifyModal(userId, username) {
+                selectedUserId = userId;
+                document.getElementById('verify-username').textContent = username;
+                document.getElementById('verify-modal').style.display = 'flex';
+            }
+            
+            function closeAllModals() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+                selectedUserId = null;
+            }
+            
+            async function banUser(userId, reason, banEmail) {
+                try {
+                    const response = await fetch('/api/admin/users/ban', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: userId,
+                            reason: reason,
+                            banEmail: banEmail
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        closeAllModals();
+                        loadUsers(currentPage);
+                        alert('User banned successfully');
+                    } else {
+                        alert('Failed to ban user: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error banning user:', error);
+                    alert('Error banning user. Please try again.');
+                }
+            }
+            
+            async function unbanUser(userId) {
+                if (!confirm('Are you sure you want to unban this user?')) {
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/api/admin/users/unban', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: userId
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        loadUsers(currentPage);
+                        alert('User unbanned successfully');
+                    } else {
+                        alert('Failed to unban user: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error unbanning user:', error);
+                    alert('Error unbanning user. Please try again.');
+                }
+            }
+            
+            async function toggleAdminStatus(userId, makeAdmin) {
+                try {
+                    const response = await fetch('/api/admin/users/toggle-admin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: userId,
+                            admin: makeAdmin
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        closeAllModals();
+                        loadUsers(currentPage);
+                        alert(makeAdmin ? 'User is now an administrator' : 'Administrator privileges removed');
+                    } else {
+                        alert('Failed to update admin status: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error updating admin status:', error);
+                    alert('Error updating admin status. Please try again.');
+                }
+            }
+            
+            async function verifyUserEmail(userId) {
+                try {
+                    const response = await fetch('/api/admin/users/verify-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: userId
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        closeAllModals();
+                        loadUsers(currentPage);
+                        alert('Email verified successfully');
+                    } else {
+                        alert('Failed to verify email: ' + (data.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error verifying email:', error);
+                    alert('Error verifying email. Please try again.');
+                }
+            }
+            
+            function showError(message) {
+                alert(message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - NoteVault</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a6ee0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4a6ee0;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">NoteVault</div>
+    </div>
+    
+    <div class="content">
+        <h2>Verify Your Email Address</h2>
+        
+        <p>Hello <span th:text="${username}">User</span>,</p>
+        
+        <p>Thank you for registering with NoteVault. To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
+        
+        <p style="text-align: center;">
+            <a th:href="${verificationUrl}" class="button">Verify Email Address</a>
+        </p>
+        
+        <p>If the button above doesn't work, you can also copy and paste the following link into your browser:</p>
+        
+        <p style="word-break: break-all;"><a th:href="${verificationUrl}" th:text="${verificationUrl}">Verification Link</a></p>
+        
+        <p>This link will expire in 24 hours.</p>
+        
+        <p>If you did not create an account with NoteVault, please ignore this email.</p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; 2025 NoteVault. All rights reserved.</p>
+        <p>This is an automated email, please do not reply.</p>
+    </div>
+</body>
+</html>
