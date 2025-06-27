@@ -63,8 +63,26 @@ print_header() {
 
 log() {
     echo -e "${BLUE}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} $1"
+    
+    # Ensure log directory exists
+    if [[ ! -d "$(dirname "$LOG_FILE")" ]]; then
+        mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
+        if [[ -d "$(dirname "$LOG_FILE")" ]]; then
+            # Set permissions if directory was created
+            if [[ -n "$PROJECT_USER" ]]; then
+                chown -R "$PROJECT_USER:$PROJECT_USER" "$(dirname "$LOG_FILE")" 2>/dev/null || true
+            fi
+        fi
+    fi
+    
+    # Append to log file if it exists or can be created
     if [[ -f "$LOG_FILE" ]]; then
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE" 2>/dev/null || true
+    elif touch "$LOG_FILE" 2>/dev/null; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE" 2>/dev/null || true
+        if [[ -n "$PROJECT_USER" ]]; then
+            chown "$PROJECT_USER:$PROJECT_USER" "$LOG_FILE" 2>/dev/null || true
+        fi
     fi
 }
 
@@ -210,6 +228,16 @@ create_user() {
     else
         info "User $PROJECT_USER already exists"
     fi
+    
+    # Ensure project directory exists with correct permissions
+    if [[ ! -d "$PROJECT_DIR" ]]; then
+        log "Creating project directory: $PROJECT_DIR"
+        mkdir -p "$PROJECT_DIR"
+    fi
+    
+    # Set correct ownership
+    chown -R "$PROJECT_USER:$PROJECT_USER" "$PROJECT_DIR"
+    chmod 755 "$PROJECT_DIR"
 }
 
 # Setup database
@@ -241,14 +269,35 @@ setup_database() {
 setup_repository() {
     log "Setting up repository..."
     
+    # Ensure project directory exists with correct permissions
+    if [[ ! -d "$PROJECT_DIR" ]]; then
+        log "Creating project directory: $PROJECT_DIR"
+        mkdir -p "$PROJECT_DIR"
+        chown -R "$PROJECT_USER:$PROJECT_USER" "$PROJECT_DIR"
+        chmod 755 "$PROJECT_DIR"
+    fi
+    
     if [[ ! -d "$PROJECT_DIR/$PROJECT_NAME" ]]; then
         log "Cloning repository..."
-        sudo -u "$PROJECT_USER" git clone "$REPO_URL" "$PROJECT_DIR/$PROJECT_NAME"
+        # Try with sudo -u first
+        if ! sudo -u "$PROJECT_USER" git clone "$REPO_URL" "$PROJECT_DIR/$PROJECT_NAME" 2>/dev/null; then
+            # If that fails, try direct clone and fix permissions after
+            log "Retrying clone with different method..."
+            git clone "$REPO_URL" "$PROJECT_DIR/$PROJECT_NAME"
+            chown -R "$PROJECT_USER:$PROJECT_USER" "$PROJECT_DIR/$PROJECT_NAME"
+        fi
     else
         log "Updating repository..."
         cd "$PROJECT_DIR/$PROJECT_NAME"
-        sudo -u "$PROJECT_USER" git fetch origin
-        sudo -u "$PROJECT_USER" git reset --hard origin/main
+        # Try with sudo -u first
+        if ! sudo -u "$PROJECT_USER" git fetch origin 2>/dev/null; then
+            # If that fails, try direct git commands and fix permissions after
+            git fetch origin
+            git reset --hard origin/main
+            chown -R "$PROJECT_USER:$PROJECT_USER" "$PROJECT_DIR/$PROJECT_NAME"
+        else
+            sudo -u "$PROJECT_USER" git reset --hard origin/main
+        fi
     fi
     
     success "Repository setup completed"
