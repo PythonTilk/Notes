@@ -21,6 +21,13 @@ enum UserRole {
   ADMIN
 }
 
+enum WorkspaceMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
 model User {
   id                   Int       @id @default(autoincrement())
   email                String    @unique
@@ -35,8 +42,35 @@ model User {
   emailVerificationToken String? @unique
   authoredNotes        Note[] // Notes authored by this user
   sharedNotes          NoteShare[] // Notes shared with this user through the join table
+  workspaceMemberships WorkspaceMember[] // Workspaces this user is a member of
+  createdWorkspaces    Workspace[] // Workspaces created by this user
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
+}
+
+model Workspace {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  color       String   @default("#3B82F6") // Hex color for workspace theme
+  creator     User     @relation(fields: [creatorId], references: [id])
+  creatorId   Int
+  members     WorkspaceMember[]
+  notes       Note[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorkspaceMember {
+  id          Int                 @id @default(autoincrement())
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  role        WorkspaceMemberRole @default(MEMBER)
+  joinedAt    DateTime            @default(now())
+
+  @@unique([workspaceId, userId])
 }
 
 model Note {
@@ -47,17 +81,25 @@ model Note {
   type      NoteType @default(TEXT)
   imageUrls String[] // Array of image URLs
   tags      String[] // Array of tags
+  // Canvas positioning
+  x         Float    @default(0)
+  y         Float    @default(0)
+  width     Float    @default(300)
+  height    Float    @default(200)
+  // Relations
   author    User     @relation(fields: [authorId], references: [id])
   authorId  Int
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int?
   sharedWith NoteShare[] // Users this note is shared with through the join table
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model NoteShare {
-  note      Note @relation(fields: [noteId], references: [id])
+  note      Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    Int
-  user      User @relation(fields: [userId], references: [id])
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
 
   @@id([noteId, userId]) // Composite primary key
