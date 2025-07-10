@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Provider from "./Provider";
 import ThemeToggle from "./components/ThemeToggle";
+import AdminButton from "./components/AdminButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Provider>{children}</Provider>
+        <Provider>
+          {children}
+          <AdminButton />
+        </Provider>
         <ThemeToggle />
       </body>
     </html>
