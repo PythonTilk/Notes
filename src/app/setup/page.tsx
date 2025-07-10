@@ -23,9 +23,11 @@ export default function SetupPage() {
         const response = await fetch('/api/setup/check');
         const data = await response.json();
         
+        console.log('Setup check client response:', data);
+        
         if (!data.setupNeeded) {
           // Setup already completed, redirect to login
-          router.push('/login');
+          // router.push('/login'); // Commented out to prevent redirect
         }
         
         setSetupNeeded(data.setupNeeded);
@@ -138,7 +140,28 @@ export default function SetupPage() {
   }
 
   if (!setupNeeded) {
-    return null; // Will redirect to login in useEffect
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center"
+        >
+          <h2 className="text-2xl font-bold text-white mb-4">Setup Already Completed</h2>
+          <p className="text-purple-200 mb-6">
+            An admin account has already been created. Please use the login page to access your account.
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-200 font-medium"
+            onClick={() => router.push('/login')}
+          >
+            Go to Login
+          </motion.button>
+        </motion.div>
+      </div>
+    );
   }
 
   return (

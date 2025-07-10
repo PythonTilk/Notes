@@ -13,9 +13,12 @@ export async function GET() {
     // If no admin users exist, setup is needed
     const setupNeeded = adminCount === 0;
 
+    console.log('Setup check response:', { success: true, setupNeeded, adminCount });
+
     return NextResponse.json({ 
       success: true, 
-      setupNeeded 
+      setupNeeded,
+      adminCount
     });
   } catch (error) {
     console.error('Error checking setup status:', error);
@@ -23,7 +26,8 @@ export async function GET() {
     return NextResponse.json({ 
       success: true, 
       message: 'Database may not be initialized yet',
-      setupNeeded: true // Default to true on error
+      setupNeeded: true, // Default to true on error
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 }

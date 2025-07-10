@@ -28,6 +28,7 @@ export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [checkingSetup, setCheckingSetup] = useState(true);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWorkspace, setNewWorkspace] = useState({
@@ -42,13 +43,37 @@ export default function Dashboard() {
   ];
 
   useEffect(() => {
+    const checkSetupStatus = async () => {
+      try {
+        const response = await fetch('/api/setup/check');
+        const data = await response.json();
+        
+        if (data.setupNeeded) {
+          router.push('/setup');
+          return;
+        }
+        
+        setCheckingSetup(false);
+      } catch (error) {
+        console.error('Error checking setup status:', error);
+        setCheckingSetup(false);
+      }
+    };
+
     if (status === 'loading') return;
-    if (!session) {
-      router.push('/login');
-      return;
+    
+    // First check if setup is needed
+    checkSetupStatus();
+    
+    // Then handle authentication
+    if (!checkingSetup) {
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+      fetchWorkspaces();
     }
-    fetchWorkspaces();
-  }, [session, status, router]);
+  }, [session, status, router, checkingSetup]);
 
   const fetchWorkspaces = async () => {
     try {
@@ -95,7 +120,7 @@ export default function Dashboard() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || checkingSetup) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <motion.div

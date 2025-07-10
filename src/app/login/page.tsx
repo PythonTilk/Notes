@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -12,11 +12,15 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showVerificationForm, setShowVerificationForm] = useState(false);
+  const verificationEmailRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
 
     try {
       const result = await signIn('credentials', {
@@ -29,12 +33,52 @@ export default function Login() {
         toast.success('Login successful!');
         router.push('/');
       } else {
-        toast.error('Invalid credentials');
+        // Check if the error is due to email verification
+        if (result?.error?.includes('verification')) {
+          setErrorMessage('Email not verified. Please check your inbox or request a new verification email.');
+          if (verificationEmailRef.current) {
+            verificationEmailRef.current.value = email;
+          }
+          setShowVerificationForm(true);
+        } else {
+          setErrorMessage('Invalid email or password');
+        }
       }
     } catch (error) {
-      toast.error('Login failed');
+      setErrorMessage('An error occurred. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const verificationEmail = verificationEmailRef.current?.value;
+    
+    if (!verificationEmail) {
+      setErrorMessage('Please enter your email address');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: verificationEmail }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Verification email sent! Please check your inbox.');
+        setShowVerificationForm(false);
+      } else {
+        setErrorMessage(data.message || 'Failed to send verification email');
+      }
+    } catch (error) {
+      setErrorMessage('An error occurred. Please try again.');
     }
   };
 
@@ -67,8 +111,14 @@ export default function Login() {
         >
           <h2 className="text-2xl font-bold text-white mb-6 text-center">Welcome Back</h2>
           
+          {errorMessage && (
+            <div className="error-message mb-4">
+              {errorMessage}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+            <div className="form-group">
               <label className="block text-purple-200 text-sm font-medium mb-2">
                 Email Address
               </label>
@@ -82,7 +132,7 @@ export default function Login() {
               />
             </div>
 
-            <div>
+            <div className="form-group">
               <label className="block text-purple-200 text-sm font-medium mb-2">
                 Password
               </label>
@@ -114,7 +164,33 @@ export default function Login() {
             </motion.button>
           </form>
 
-          <div className="mt-6 text-center space-y-3">
+          {/* Verification Form */}
+          {showVerificationForm && (
+            <div id="verification-form" className="mt-6 pt-6 border-t border-white/20">
+              <h3 className="text-lg font-medium text-white mb-4">Resend Verification Email</h3>
+              <form onSubmit={handleResendVerification}>
+                <div className="form-group">
+                  <input
+                    type="email"
+                    ref={verificationEmailRef}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full mt-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 font-medium"
+                >
+                  Send Verification Email
+                </motion.button>
+              </form>
+            </div>
+          )}
+
+          <div className="mt-6 text-center space-y-3 auth-links">
             <p className="text-purple-200 text-sm">
               Don't have an account?{' '}
               <Link href="/register" className="text-purple-300 hover:text-white transition-colors font-medium">
@@ -126,6 +202,16 @@ export default function Login() {
                 Forgot your password?
               </Link>
             </p>
+            {!showVerificationForm && (
+              <p>
+                <button 
+                  onClick={() => setShowVerificationForm(true)}
+                  className="text-purple-300 hover:text-white transition-colors text-sm"
+                >
+                  Resend verification email
+                </button>
+              </p>
+            )}
           </div>
         </motion.div>
 

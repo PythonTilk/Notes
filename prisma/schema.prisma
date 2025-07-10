@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum NoteType {
@@ -33,7 +33,7 @@ model User {
   email                String    @unique
   name                 String?
   password             String
-  biography            String?   @db.Text
+  biography            String?
   avatar               String? // URL to the avatar image
   role                 UserRole  @default(USER)
   passwordResetToken   String?   @unique
@@ -51,7 +51,7 @@ model User {
 model Workspace {
   id          Int      @id @default(autoincrement())
   name        String
-  description String?  @db.Text
+  description String?
   color       String   @default("#3B82F6") // Hex color for workspace theme
   creator     User     @relation(fields: [creatorId], references: [id])
   creatorId   Int
@@ -76,11 +76,11 @@ model WorkspaceMember {
 model Note {
   id        Int      @id @default(autoincrement())
   title     String
-  content   String?  @db.Text
+  content   String?
   published Boolean  @default(false)
   type      NoteType @default(TEXT)
-  imageUrls String[] // Array of image URLs
-  tags      String[] // Array of tags
+  imageUrls String   @default("") // Comma-separated image URLs
+  tags      String   @default("") // Comma-separated tags
   // Canvas positioning
   x         Float    @default(0)
   y         Float    @default(0)

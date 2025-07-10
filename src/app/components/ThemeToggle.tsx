@@ -1,48 +1,104 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark'); // Default to dark theme
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme) {
-      setTheme(storedTheme);
-      document.documentElement.setAttribute('data-theme', storedTheme);
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark');
-      document.documentElement.setAttribute('data-theme', 'dark');
+    // Initialize audio element
+    audioRef.current = new Audio();
+    audioRef.current.volume = 0.3;
+    
+    // Try to load the toggle sound
+    try {
+      // We'll need to create this sound file or use an alternative approach
+      const soundUrl = '/sounds/toggle.mp3';
+      fetch(soundUrl, { method: 'HEAD' })
+        .then(res => {
+          if (res.ok) {
+            if (audioRef.current) audioRef.current.src = soundUrl;
+          } else {
+            console.log('Toggle sound not available');
+          }
+        })
+        .catch(e => console.log('Sound check error:', e));
+    } catch (e) {
+      console.log('Sound initialization error:', e);
     }
+
+    // Initialize theme
+    const storedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(storedTheme);
+    document.documentElement.setAttribute('data-theme', storedTheme);
+
+    return () => {
+      // Cleanup
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    const currentTheme = theme;
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // Play sound effect
+    try {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(e => console.log('Sound could not be played:', e));
+      }
+    } catch (e) {
+      console.log('Sound error:', e);
+    }
+
+    // Add switching animation
+    if (toggleButtonRef.current) {
+      toggleButtonRef.current.classList.add('switching');
+      
+      setTimeout(() => {
+        setTheme(newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+      }, 300);
+
+      setTimeout(() => {
+        if (toggleButtonRef.current) {
+          toggleButtonRef.current.classList.remove('switching');
+        }
+      }, 600);
+    }
   };
 
   return (
-    <div className="theme-toggle" onClick={toggleTheme}>
-      {theme === 'light' ? (
-        <svg className="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-      ) : (
-        <svg className="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-      )}
-    </div>
+    <button 
+      ref={toggleButtonRef}
+      className="theme-toggle" 
+      onClick={toggleTheme}
+      title="Toggle dark mode"
+    >
+      <svg className="sun-icon" viewBox="0 0 24 24" fill="none" style={{ display: theme === 'light' ? 'block' : 'none' }}>
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2"/>
+        <path d="M12 20v2"/>
+        <path d="m4.93 4.93 1.41 1.41"/>
+        <path d="m17.66 17.66 1.41 1.41"/>
+        <path d="M2 12h2"/>
+        <path d="M20 12h2"/>
+        <path d="m6.34 17.66-1.41 1.41"/>
+        <path d="m19.07 4.93-1.41 1.41"/>
+      </svg>
+      <svg className="moon-icon" viewBox="0 0 24 24" fill="none" style={{ display: theme === 'dark' ? 'block' : 'none' }}>
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        <path d="M19 3v4"/>
+        <path d="M21 5h-4"/>
+      </svg>
+    </button>
   );
 }
