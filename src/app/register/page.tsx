@@ -3,17 +3,17 @@ import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     try {
       const response = await fetch('/api/register', {
@@ -25,12 +25,13 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
+        showToast("Registration successful! Please log in.", "success");
         router.push('/login');
       } else {
-        setError(data.message || 'Registration failed');
+        showToast(data.message || 'Registration failed', "error");
       }
     } catch (err) {
-      setError('An unexpected error occurred.');
+      showToast('An unexpected error occurred.', "error");
     }
   };
 
@@ -78,7 +79,6 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          {error && <p className="mb-4 text-center text-red-500">{error}</p>}
           <Button type="submit" className="w-full">
             Register
           </Button>

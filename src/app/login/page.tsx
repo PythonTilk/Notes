@@ -4,16 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/context/ToastContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     const result = await signIn("credentials", {
       redirect: false,
@@ -22,8 +22,9 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError(result.error);
+      showToast(result.error, "error");
     } else {
+      showToast("Login successful!", "success");
       router.push("/dashboard"); // Redirect to dashboard on successful login
     }
   };
@@ -60,7 +61,6 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          {error && <p className="mb-4 text-center text-red-500">{error}</p>}
           <Button type="submit" className="w-full">
             Login
           </Button>
