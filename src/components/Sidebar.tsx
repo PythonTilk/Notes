@@ -7,6 +7,7 @@ export function Sidebar() {
   const navLinks = [
     { name: "Dashboard", href: "/dashboard" },
     { name: "Notes", href: "/notes" },
+    { name: "Profile", href: "/profile" },
     // Add more links as needed
   ];
 
