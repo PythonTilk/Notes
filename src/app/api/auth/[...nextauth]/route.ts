@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import prisma from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export const authOptions = {
   providers: [
@@ -10,14 +12,17 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        // Add your own logic here to retrieve a user from your database
-        // and verify their credentials.
-        // For now, we'll just return a dummy user.
-        if (credentials?.email === "test@example.com" && credentials?.password === "password") {
-          return { id: "1", name: "Test User", email: "test@example.com" };
-        } else {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
+
+        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+
+        if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
+          return null;
+        }
+
+        return { id: user.id.toString(), name: user.name, email: user.email };
       },
     }),
   ],

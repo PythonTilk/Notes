@@ -15,24 +15,23 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
-    // Simulate registration for now
-    console.log("Registering user:", { name, email, password });
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
 
-    // In a real application, you would make an API call here
-    // For example:
-    // const response = await fetch('/api/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ name, email, password }),
-    // });
-    // const data = await response.json();
-    // if (response.ok) {
-    //   router.push('/login');
-    // } else {
-    //   setError(data.message || 'Registration failed');
-    // }
+      const data = await response.json();
 
-    router.push("/login"); // Redirect to login page after simulated registration
+      if (response.ok) {
+        router.push('/login');
+      } else {
+        setError(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred.');
+    }
   };
 
   return (
