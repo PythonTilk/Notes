@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 import NextAuthSessionProvider from "./Provider";
 import { ToastProvider } from "@/context/ToastContext";
+import { Layout } from "@/components/Layout";
 
 export default function RootLayout({
   children,
@@ -21,7 +22,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ToastProvider>
-          <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+          <NextAuthSessionProvider>
+            <Layout>{children}</Layout>
+          </NextAuthSessionProvider>
         </ToastProvider>
       </body>
     </html>
