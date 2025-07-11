@@ -17,6 +17,9 @@ export default async function AdminDashboardPage() {
         <Link href="/admin/users">
           <Button>Manage Users</Button>
         </Link>
+        <Link href="/admin/banned-emails">
+          <Button>Manage Banned Emails</Button>
+        </Link>
         {/* Add more admin links here */}
       </div>
     </div>
