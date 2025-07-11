@@ -8,6 +8,7 @@ export function Sidebar() {
     { name: "Dashboard", href: "/dashboard" },
     { name: "Notes", href: "/notes" },
     { name: "Profile", href: "/profile" },
+    { name: "Workspaces", href: "/workspaces" },
     // Add more links as needed
   ];
 
