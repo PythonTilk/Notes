@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { useState } from "react";
@@ -37,7 +38,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
+      <Card className="w-full max-w-md">
         <h2 className="mb-6 text-center text-3xl font-bold">Register</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -89,7 +90,7 @@ export default function RegisterPage() {
             Login
           </Link>
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

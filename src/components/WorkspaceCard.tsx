@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "./ui/Button";
+import { Card } from "./ui/Card";
 
 interface WorkspaceCardProps {
   workspace: {
@@ -13,10 +14,7 @@ interface WorkspaceCardProps {
 
 export function WorkspaceCard({ workspace, onDelete }: WorkspaceCardProps) {
   return (
-    <div
-      className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
-      style={{ borderLeft: `4px solid ${workspace.color}` }}
-    >
+    <Card style={{ borderLeft: `4px solid ${workspace.color}` }}>
       <h3 className="mb-2 text-xl font-semibold">{workspace.name}</h3>
       <p className="mb-4 text-gray-600">{workspace.description || "No description"}</p>
       <div className="flex gap-2">
@@ -27,6 +25,6 @@ export function WorkspaceCard({ workspace, onDelete }: WorkspaceCardProps) {
           Delete
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }
