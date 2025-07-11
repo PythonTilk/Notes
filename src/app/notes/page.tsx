@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { NoteCard } from "@/components/NoteCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface Note {
   id: number;
@@ -89,7 +90,11 @@ export default function NotesPage() {
   };
 
   if (status === "loading") {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   return (
