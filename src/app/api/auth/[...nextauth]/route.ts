@@ -22,10 +22,24 @@ export const authOptions = {
           return null;
         }
 
-        return { id: user.id.toString(), name: user.name, email: user.email };
+        return { id: user.id.toString(), name: user.name, email: user.email, role: user.role };
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.role) {
+        session.user.role = token.role;
+      }
+      return session;
+    },
+  },
   pages: {
     signIn: "/login",
   },
