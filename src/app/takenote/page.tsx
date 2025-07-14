@@ -15,7 +15,8 @@ import {
   Cog6ToothIcon,
   SunIcon,
   MoonIcon,
-  CommandLineIcon
+  CommandLineIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import toast, { Toaster } from 'react-hot-toast';
@@ -35,6 +36,11 @@ import Mousetrap from 'mousetrap';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { getSampleNotes, getSampleCategories, Note } from '@/hooks/useSampleData';
+import prettier from 'prettier/standalone';
+import parserMarkdown from 'prettier/parser-markdown';
+import parserBabel from 'prettier/parser-babel';
+import parserHtml from 'prettier/parser-html';
+import parserCss from 'prettier/parser-postcss';
 
 interface Category {
   id: string;
@@ -139,8 +145,15 @@ export default function TakeNote() {
       setDarkMode(!darkMode);
     });
 
+    Mousetrap.bind('ctrl+shift+f', (e) => {
+      e.preventDefault();
+      if (selectedNote) {
+        formatNote();
+      }
+    });
+
     return () => {
-      Mousetrap.unbind(['ctrl+n', 'ctrl+s', 'ctrl+f', 'ctrl+p', 'ctrl+d']);
+      Mousetrap.unbind(['ctrl+n', 'ctrl+s', 'ctrl+f', 'ctrl+p', 'ctrl+d', 'ctrl+shift+f']);
     };
   }, [selectedNote, showPreview, darkMode]);
 
@@ -186,6 +199,88 @@ export default function TakeNote() {
         ? { ...note, favorite: !note.favorite }
         : note
     ));
+  };
+
+  const formatNote = async () => {
+    if (!selectedNote) return;
+    
+    try {
+      let formattedContent = selectedNote.content;
+      
+      // Detect content type and format accordingly
+      if (selectedNote.content.includes('```javascript') || selectedNote.content.includes('```js')) {
+        // Format JavaScript code blocks
+        formattedContent = selectedNote.content.replace(
+          /```(?:javascript|js)\n([\s\S]*?)\n```/g,
+          (match, code) => {
+            try {
+              const formatted = prettier.format(code, {
+                parser: 'babel',
+                plugins: [parserBabel],
+                semi: true,
+                singleQuote: true,
+                tabWidth: 2,
+              });
+              return `\`\`\`javascript\n${formatted.trim()}\n\`\`\``;
+            } catch {
+              return match;
+            }
+          }
+        );
+      } else if (selectedNote.content.includes('```html')) {
+        // Format HTML code blocks
+        formattedContent = selectedNote.content.replace(
+          /```html\n([\s\S]*?)\n```/g,
+          (match, code) => {
+            try {
+              const formatted = prettier.format(code, {
+                parser: 'html',
+                plugins: [parserHtml],
+                tabWidth: 2,
+              });
+              return `\`\`\`html\n${formatted.trim()}\n\`\`\``;
+            } catch {
+              return match;
+            }
+          }
+        );
+      } else if (selectedNote.content.includes('```css')) {
+        // Format CSS code blocks
+        formattedContent = selectedNote.content.replace(
+          /```css\n([\s\S]*?)\n```/g,
+          (match, code) => {
+            try {
+              const formatted = prettier.format(code, {
+                parser: 'css',
+                plugins: [parserCss],
+                tabWidth: 2,
+              });
+              return `\`\`\`css\n${formatted.trim()}\n\`\`\``;
+            } catch {
+              return match;
+            }
+          }
+        );
+      } else {
+        // Format as Markdown
+        try {
+          formattedContent = prettier.format(selectedNote.content, {
+            parser: 'markdown',
+            plugins: [parserMarkdown],
+            tabWidth: 2,
+            proseWrap: 'preserve',
+          });
+        } catch {
+          // If markdown formatting fails, keep original content
+        }
+      }
+      
+      setSelectedNote({ ...selectedNote, content: formattedContent });
+      toast.success('Note formatted with Prettier');
+    } catch (error) {
+      console.error('Error formatting note:', error);
+      toast.error('Failed to format note');
+    }
   };
 
   const exportNotes = async () => {
@@ -432,8 +527,18 @@ export default function TakeNote() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={formatNote}
+                  className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                  title="Format with Prettier (Ctrl+Shift+F)"
+                >
+                  <SparklesIcon className="w-5 h-5" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowPreview(!showPreview)}
                   className={`p-2 rounded-lg ${showPreview ? 'bg-blue-600 text-white' : darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                  title="Toggle Preview (Ctrl+P)"
                 >
                   <EyeIcon className="w-5 h-5" />
                 </motion.button>
@@ -442,6 +547,7 @@ export default function TakeNote() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setDarkMode(!darkMode)}
                   className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                  title="Toggle Theme (Ctrl+D)"
                 >
                   {darkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
                 </motion.button>
@@ -450,6 +556,7 @@ export default function TakeNote() {
                   whileTap={{ scale: 0.95 }}
                   onClick={exportNotes}
                   className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                  title="Export All Notes"
                 >
                   <ArrowDownTrayIcon className="w-5 h-5" />
                 </motion.button>
@@ -596,6 +703,7 @@ export default function TakeNote() {
                     <div>Ctrl+F - Search</div>
                     <div>Ctrl+P - Toggle preview</div>
                     <div>Ctrl+D - Toggle dark mode</div>
+                    <div>Ctrl+Shift+F - Format with Prettier</div>
                   </div>
                 </div>
                 
