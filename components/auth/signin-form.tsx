@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn, getProviders } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Github, Mail, Zap, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Github, Mail, Zap, Loader2, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
@@ -17,6 +18,8 @@ export function SignInForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const message = searchParams.get('message');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +71,14 @@ export function SignInForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {message && (
+          <Alert className="border-green-600 bg-green-900/20">
+            <CheckCircle className="h-4 w-4 text-green-400" />
+            <AlertDescription className="text-green-400">
+              {message}
+            </AlertDescription>
+          </Alert>
+        )}
         {/* OAuth Buttons */}
         <div className="space-y-3">
           <Button
@@ -151,13 +162,6 @@ export function SignInForm() {
               Sign up
             </Link>
           </p>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="p-3 bg-muted/50 rounded-lg border border-border/50">
-          <p className="text-xs text-muted-foreground mb-2">Demo Credentials:</p>
-          <p className="text-xs font-mono">Email: admin@notevault.com</p>
-          <p className="text-xs font-mono">Password: admin123</p>
         </div>
       </CardContent>
     </Card>
