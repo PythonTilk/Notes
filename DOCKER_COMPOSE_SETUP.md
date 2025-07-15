@@ -37,6 +37,11 @@ docker compose up -d
 ```
 
 ### 4. Access the Application
+- The application will automatically:
+  - Wait for PostgreSQL to be ready
+  - Run database migrations to create tables
+  - Generate Prisma client
+  - Start the Next.js server
 - Open your browser and go to: http://localhost:12000
 - You'll be redirected to the setup page to create your admin account
 - Fill in your admin details and click "Create Admin Account"
@@ -145,9 +150,10 @@ docker compose up -d --build app
 # Access PostgreSQL directly
 docker compose exec postgres psql -U postgres -d notevault
 
-# Run Prisma commands
+# Run Prisma commands (migrations are automatic, but you can run manually)
 docker compose exec app npx prisma studio
 docker compose exec app npx prisma db push
+docker compose exec app npx prisma generate
 ```
 
 ## Troubleshooting

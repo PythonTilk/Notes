@@ -108,8 +108,9 @@ case "${1:-help}" in
     
     "rebuild")
         print_status "Rebuilding NoteVault application (no cache)..."
+        docker compose down app
         docker compose build --no-cache app
-        docker compose up -d app
+        docker compose up -d
         print_success "Rebuild complete!"
         ;;
     

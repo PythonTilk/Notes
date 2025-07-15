@@ -30,10 +30,11 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-# Install OpenSSL and other dependencies required by Prisma in production
+# Install OpenSSL, PostgreSQL client, and other dependencies required by Prisma in production
 RUN apt-get update && apt-get install -y \
     openssl \
     ca-certificates \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV production
@@ -53,6 +54,10 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+# Copy the entrypoint script
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
+
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -66,6 +71,5 @@ ENV PORT 12000
 # set hostname to localhost
 ENV HOSTNAME "0.0.0.0"
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD ["node", "server.js"]
+# Use the entrypoint script instead of directly running server.js
+ENTRYPOINT ["./docker-entrypoint.sh"]
