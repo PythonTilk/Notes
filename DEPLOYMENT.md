@@ -30,7 +30,16 @@ NODE_ENV="production"
 
 1. Build the Docker image:
 ```bash
+# Quick build (uses cache)
 docker build -t notevault .
+
+# Or use the provided script
+./docker-build.sh
+
+# If you encounter build issues, force a fresh build
+./docker-build.sh --no-cache
+# or manually:
+docker build --no-cache -t notevault .
 ```
 
 2. Run with Docker Compose:
@@ -77,11 +86,18 @@ The application will automatically:
 
 ### Troubleshooting
 
+#### Docker Build Issues
+If you encounter build errors like "Could not find Prisma Schema":
+- This is usually due to Docker layer caching
+- Solution: Build with `--no-cache` flag: `./docker-build.sh --no-cache`
+- Or manually: `docker build --no-cache -t notevault .`
+
 #### Prisma Client Issues
 If you encounter Prisma client errors, ensure:
 - The correct binary targets are included in `schema.prisma`
 - OpenSSL libraries are available in the container
 - Database connection is properly configured
+- Try rebuilding with `--no-cache` if issues persist
 
 #### Setup Page Issues
 - Clear browser cache if setup page doesn't load
