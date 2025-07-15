@@ -20,6 +20,7 @@ async function main() {
         email: 'admin@notevault.com',
         name: 'Admin User',
         username: 'admin',
+        password: hashedPassword,
         role: UserRole.ADMIN,
         bio: 'System Administrator',
         balance: 100000.0, // Admin gets more starting balance

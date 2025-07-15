@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'react-hot-toast';
@@ -12,12 +12,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.APP_URL || 'http://localhost:12000'),
   title: 'NoteVault - Modern Note Trading Platform',
   description: 'A modern note-taking application with trading-style dashboard inspired by rugplay.com',
   keywords: ['notes', 'trading', 'dashboard', 'productivity', 'modern'],
   authors: [{ name: 'NoteVault Team' }],
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#00ff88',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -34,6 +33,12 @@ export const metadata: Metadata = {
     title: 'NoteVault - Modern Note Trading Platform',
     description: 'A modern note-taking application with trading-style dashboard',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#00ff88',
 };
 
 export default function RootLayout({
