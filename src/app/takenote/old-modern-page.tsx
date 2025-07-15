@@ -23,11 +23,7 @@ import {
   TagIcon,
   ClockIcon,
   ChevronRightIcon,
-  ChevronDownIcon,
-  HomeIcon,
-  BriefcaseIcon,
-  TrophyIcon,
-  ChartBarIcon
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import toast, { Toaster } from 'react-hot-toast';
@@ -60,22 +56,21 @@ interface Category {
   icon: React.ReactNode;
 }
 
-export default function CleanTakeNote() {
+export default function ModernTakeNote() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showPreview, setShowPreview] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const editorRef = useRef<any>(null);
 
   const defaultCategories: Category[] = [
-    { id: 'all', name: 'All Notes', color: 'text-blue-500', icon: <DocumentTextIcon className="w-4 h-4" /> },
-    { id: 'favorites', name: 'Favorites', color: 'text-pink-500', icon: <HeartIcon className="w-4 h-4" /> },
-    { id: 'recent', name: 'Recent', color: 'text-green-500', icon: <ClockIcon className="w-4 h-4" /> },
-    { id: 'work', name: 'Work', color: 'text-purple-500', icon: <BriefcaseIcon className="w-4 h-4" /> },
-    { id: 'personal', name: 'Personal', color: 'text-orange-500', icon: <HomeIcon className="w-4 h-4" /> },
+    { id: 'all', name: 'All Notes', color: 'from-blue-500 to-purple-600', icon: <DocumentTextIcon className="w-4 h-4" /> },
+    { id: 'favorites', name: 'Favorites', color: 'from-pink-500 to-rose-500', icon: <HeartIcon className="w-4 h-4" /> },
+    { id: 'trash', name: 'Trash', color: 'from-gray-500 to-gray-600', icon: <TrashIcon className="w-4 h-4" /> },
   ];
 
   const [categories, setCategories] = useState<Category[]>(defaultCategories);
@@ -120,7 +115,7 @@ export default function CleanTakeNote() {
   }, [notes]);
 
   useEffect(() => {
-    localStorage.setItem('takenote-categories', JSON.stringify(categories.slice(5)));
+    localStorage.setItem('takenote-categories', JSON.stringify(categories.slice(3)));
   }, [categories]);
 
   useEffect(() => {
@@ -175,7 +170,7 @@ export default function CleanTakeNote() {
       content: '',
       createdAt: new Date(),
       updatedAt: new Date(),
-      category: 'personal',
+      category: 'general',
       tags: [],
       favorite: false,
     };
@@ -334,11 +329,7 @@ export default function CleanTakeNote() {
     
     if (selectedCategory === 'all') return matchesSearch;
     if (selectedCategory === 'favorites') return matchesSearch && note.favorite;
-    if (selectedCategory === 'recent') {
-      const threeDaysAgo = new Date();
-      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-      return matchesSearch && note.updatedAt > threeDaysAgo;
-    }
+    if (selectedCategory === 'trash') return false; // Implement trash later
     
     return matchesSearch && note.category === selectedCategory;
   });
@@ -346,66 +337,55 @@ export default function CleanTakeNote() {
   const getCategoryCount = (categoryId: string) => {
     if (categoryId === 'all') return notes.length;
     if (categoryId === 'favorites') return notes.filter(note => note.favorite).length;
-    if (categoryId === 'recent') {
-      const threeDaysAgo = new Date();
-      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-      return notes.filter(note => note.updatedAt > threeDaysAgo).length;
-    }
+    if (categoryId === 'trash') return 0;
     return notes.filter(note => note.category === categoryId).length;
   };
 
   return (
-    <div className={`min-h-screen font-inter ${
+    <div className={`min-h-screen transition-all duration-300 ${
       darkMode 
-        ? 'bg-gray-900 text-white' 
-        : 'bg-gray-50 text-gray-900'
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-br from-gray-50 via-white to-gray-100'
     }`}>
       <Toaster 
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: darkMode ? '#1f2937' : '#ffffff',
+            background: darkMode ? '#374151' : '#ffffff',
             color: darkMode ? '#ffffff' : '#000000',
-            border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-            borderRadius: '8px',
+            border: `1px solid ${darkMode ? '#4B5563' : '#E5E7EB'}`,
+            borderRadius: '12px',
             fontSize: '14px',
-            fontFamily: 'Inter, sans-serif',
           },
         }}
       />
 
       <div className="flex h-screen">
-        {/* Professional Sidebar */}
+        {/* Modern Sidebar */}
         <motion.div
           initial={false}
           animate={{ width: sidebarCollapsed ? 0 : 320 }}
-          className={`${
-            darkMode 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-200'
-          } border-r flex flex-col overflow-hidden shadow-lg`}
+          className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} backdrop-blur-xl border-r ${
+            darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+          } flex flex-col overflow-hidden`}
         >
-          {/* Sidebar Header */}
-          <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200/10">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <DocumentTextIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold">TakeNote</h1>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Professional Notes
-                  </p>
-                </div>
-              </div>
+              <motion.h1 
+                className={`text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent`}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                TakeNote
+              </motion.h1>
               <div className="flex items-center gap-2">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={createNewNote}
-                  className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-md"
+                  className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                 </motion.button>
@@ -413,11 +393,7 @@ export default function CleanTakeNote() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    darkMode 
-                      ? 'hover:bg-gray-700 text-gray-300' 
-                      : 'hover:bg-gray-100 text-gray-600'
-                  }`}
+                  className={`p-2 rounded-xl ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
                 >
                   <Bars3Icon className="w-4 h-4" />
                 </motion.button>
@@ -435,20 +411,18 @@ export default function CleanTakeNote() {
                 placeholder="Search notes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm transition-all ${
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border ${
                   darkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' 
-                    : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                    ? 'bg-gray-700/50 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500'
+                } focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200`}
               />
             </div>
           </div>
 
           {/* Categories */}
           <div className="p-6">
-            <h3 className={`text-xs font-semibold uppercase tracking-wider mb-4 ${
-              darkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <h3 className={`text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4 uppercase tracking-wider`}>
               Categories
             </h3>
             <div className="space-y-2">
@@ -458,23 +432,21 @@ export default function CleanTakeNote() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 ${
                     selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                      ? `bg-gradient-to-r ${category.color} text-white shadow-lg`
                       : darkMode
-                      ? 'hover:bg-gray-700 text-gray-300'
+                      ? 'hover:bg-gray-700/50 text-gray-300'
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={selectedCategory === category.id ? 'text-white' : category.color}>
-                      {category.icon}
-                    </span>
-                    <span>{category.name}</span>
+                    {category.icon}
+                    <span className="font-medium">{category.name}</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-md ${
+                  <span className={`text-sm px-2 py-1 rounded-lg ${
                     selectedCategory === category.id
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-white/20'
                       : darkMode
                       ? 'bg-gray-600 text-gray-300'
                       : 'bg-gray-200 text-gray-600'
@@ -489,9 +461,7 @@ export default function CleanTakeNote() {
           {/* Notes List */}
           <div className="flex-1 overflow-hidden">
             <div className="px-6 pb-4">
-              <h3 className={`text-xs font-semibold uppercase tracking-wider ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
+              <h3 className={`text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4 uppercase tracking-wider`}>
                 Notes ({filteredNotes.length})
               </h3>
             </div>
@@ -501,26 +471,28 @@ export default function CleanTakeNote() {
                   {filteredNotes.map((note) => (
                     <motion.div
                       key={note.id}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
+                      exit={{ opacity: 0, y: -20 }}
                       whileHover={{ scale: 1.02 }}
                       onClick={() => setSelectedNote(note)}
-                      className={`p-4 rounded-lg cursor-pointer transition-all ${
+                      className={`p-4 rounded-xl cursor-pointer transition-all duration-200 ${
                         selectedNote?.id === note.id
                           ? darkMode
-                            ? 'bg-blue-600/20 border-2 border-blue-500/50'
-                            : 'bg-blue-50 border-2 border-blue-200'
+                            ? 'bg-blue-600/20 border-blue-500/50 border'
+                            : 'bg-blue-50 border-blue-200 border'
                           : darkMode
-                          ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600'
-                          : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md'
+                          ? 'bg-gray-700/30 hover:bg-gray-700/50 border border-gray-600/30'
+                          : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-sm'
                       }`}
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <h4 className="font-semibold text-sm truncate flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className={`font-semibold truncate ${
+                          darkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
                           {note.title}
                         </h4>
-                        <div className="flex items-center gap-2 ml-3">
+                        <div className="flex items-center gap-1 ml-2">
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
@@ -528,7 +500,7 @@ export default function CleanTakeNote() {
                               e.stopPropagation();
                               toggleFavorite(note.id);
                             }}
-                            className={`p-1 rounded transition-colors ${
+                            className={`p-1 rounded-lg transition-colors ${
                               note.favorite
                                 ? 'text-pink-500 hover:text-pink-600'
                                 : darkMode
@@ -544,25 +516,19 @@ export default function CleanTakeNote() {
                           </motion.button>
                         </div>
                       </div>
-                      <p className={`text-xs ${
-                        darkMode ? 'text-gray-400' : 'text-gray-600'
-                      } line-clamp-2 mb-3`}>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} line-clamp-2`}>
                         {note.content.substring(0, 100)}...
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs ${
-                          darkMode ? 'text-gray-500' : 'text-gray-400'
-                        }`}>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                           {note.updatedAt.toLocaleDateString()}
                         </span>
                         <div className="flex items-center gap-2">
                           {note.tags.slice(0, 2).map((tag) => (
                             <span
                               key={tag}
-                              className={`text-xs px-2 py-1 rounded-md ${
-                                darkMode 
-                                  ? 'bg-gray-600 text-gray-300' 
-                                  : 'bg-gray-100 text-gray-600'
+                              className={`text-xs px-2 py-1 rounded-lg ${
+                                darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-100 text-gray-600'
                               }`}
                             >
                               {tag}
@@ -582,12 +548,10 @@ export default function CleanTakeNote() {
         <div className="flex-1 flex flex-col">
           {selectedNote ? (
             <>
-              {/* Header */}
+              {/* Editor Header */}
               <div className={`px-8 py-6 border-b ${
-                darkMode 
-                  ? 'border-gray-700 bg-gray-800' 
-                  : 'border-gray-200 bg-white'
-              } shadow-sm`}>
+                darkMode ? 'border-gray-700/50 bg-gray-800/30' : 'border-gray-200/50 bg-white/30'
+              } backdrop-blur-xl`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <input
@@ -595,15 +559,15 @@ export default function CleanTakeNote() {
                       value={selectedNote.title}
                       onChange={(e) => setSelectedNote({ ...selectedNote, title: e.target.value })}
                       className={`text-2xl font-bold bg-transparent border-none outline-none ${
-                        darkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'
-                      }`}
+                        darkMode ? 'text-white' : 'text-gray-900'
+                      } placeholder-gray-400`}
                       placeholder="Note title..."
                     />
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => toggleFavorite(selectedNote.id)}
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-2 rounded-xl transition-colors ${
                         selectedNote.favorite
                           ? 'text-pink-500 hover:text-pink-600'
                           : darkMode
@@ -612,23 +576,19 @@ export default function CleanTakeNote() {
                       }`}
                     >
                       {selectedNote.favorite ? (
-                        <HeartIconSolid className="w-6 h-6" />
+                        <HeartIconSolid className="w-5 h-5" />
                       ) : (
-                        <HeartIcon className="w-6 h-6" />
+                        <HeartIcon className="w-5 h-5" />
                       )}
                     </motion.button>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={formatNote}
-                      className={`p-3 rounded-lg transition-colors ${
-                        darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
-                      }`}
+                      className={`p-3 rounded-xl ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
                       title="Format with Prettier (Ctrl+Shift+F)"
                     >
                       <SparklesIcon className="w-5 h-5" />
@@ -637,13 +597,11 @@ export default function CleanTakeNote() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowPreview(!showPreview)}
-                      className={`p-3 rounded-lg transition-colors ${
+                      className={`p-3 rounded-xl ${
                         showPreview 
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md' 
-                          : darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
-                      }`}
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' 
+                          : darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                      } transition-all duration-200`}
                       title="Toggle Preview (Ctrl+P)"
                     >
                       <EyeIcon className="w-5 h-5" />
@@ -652,11 +610,7 @@ export default function CleanTakeNote() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setDarkMode(!darkMode)}
-                      className={`p-3 rounded-lg transition-colors ${
-                        darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
-                      }`}
+                      className={`p-3 rounded-xl ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
                       title="Toggle Theme (Ctrl+D)"
                     >
                       {darkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
@@ -665,11 +619,7 @@ export default function CleanTakeNote() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={exportNotes}
-                      className={`p-3 rounded-lg transition-colors ${
-                        darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
-                      }`}
+                      className={`p-3 rounded-xl ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
                       title="Export All Notes"
                     >
                       <ArrowDownTrayIcon className="w-5 h-5" />
@@ -691,12 +641,11 @@ export default function CleanTakeNote() {
                         '&': {
                           fontSize: '14px',
                           height: '100%',
-                          fontFamily: 'Inter, sans-serif',
                         },
                         '.cm-content': {
                           padding: '24px',
                           minHeight: '100%',
-                          lineHeight: '1.6',
+                          fontFamily: '"JetBrains Mono", "Fira Code", monospace',
                         },
                         '.cm-focused': {
                           outline: 'none',
@@ -721,17 +670,15 @@ export default function CleanTakeNote() {
                       initial={{ width: 0, opacity: 0 }}
                       animate={{ width: '50%', opacity: 1 }}
                       exit={{ width: 0, opacity: 0 }}
-                      className={`border-l overflow-y-auto ${
-                        darkMode 
-                          ? 'border-gray-700 bg-gray-800' 
-                          : 'border-gray-200 bg-white'
-                      }`}
+                      className={`border-l ${
+                        darkMode ? 'border-gray-700/50 bg-gray-800/30' : 'border-gray-200/50 bg-white/30'
+                      } backdrop-blur-xl overflow-y-auto`}
                     >
                       <div className="p-8">
                         <div
                           className={`prose max-w-none ${
                             darkMode ? 'prose-invert' : ''
-                          } prose-headings:font-bold prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-pre:bg-gray-100 prose-pre:border`}
+                          } prose-headings:font-bold prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded`}
                           dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(
                               marked(processLinkedNotes(selectedNote.content))
@@ -750,30 +697,22 @@ export default function CleanTakeNote() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center max-w-lg mx-auto px-8"
+                className="text-center max-w-md mx-auto px-8"
               >
-                <div className={`w-24 h-24 mx-auto mb-8 rounded-2xl flex items-center justify-center ${
-                  darkMode 
-                    ? 'bg-gradient-to-br from-blue-500/20 to-purple-600/20' 
-                    : 'bg-gradient-to-br from-blue-500/10 to-purple-600/10'
-                }`}>
-                  <DocumentTextIcon className="w-12 h-12 text-blue-500" />
+                <div className={`w-24 h-24 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-600/20 flex items-center justify-center`}>
+                  <DocumentTextIcon className={`w-12 h-12 ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} />
                 </div>
-                <h2 className={`text-3xl font-bold mb-4 ${
-                  darkMode ? 'text-white' : 'text-gray-900'
-                }`}>
+                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   Ready to create?
                 </h2>
-                <p className={`text-lg mb-8 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
-                  Select a note from the sidebar or create a new one to get started with your professional note-taking experience.
+                <p className={`text-lg mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Select a note from the sidebar or create a new one to get started with your modern note-taking experience.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={createNewNote}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   Create Your First Note
                 </motion.button>

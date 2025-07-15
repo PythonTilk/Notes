@@ -60,7 +60,7 @@ interface Category {
   icon: React.ReactNode;
 }
 
-export default function CleanTakeNote() {
+export default function RugplayTakeNote() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,14 +68,15 @@ export default function CleanTakeNote() {
   const [showPreview, setShowPreview] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const editorRef = useRef<any>(null);
 
   const defaultCategories: Category[] = [
-    { id: 'all', name: 'All Notes', color: 'text-blue-500', icon: <DocumentTextIcon className="w-4 h-4" /> },
-    { id: 'favorites', name: 'Favorites', color: 'text-pink-500', icon: <HeartIcon className="w-4 h-4" /> },
-    { id: 'recent', name: 'Recent', color: 'text-green-500', icon: <ClockIcon className="w-4 h-4" /> },
-    { id: 'work', name: 'Work', color: 'text-purple-500', icon: <BriefcaseIcon className="w-4 h-4" /> },
-    { id: 'personal', name: 'Personal', color: 'text-orange-500', icon: <HomeIcon className="w-4 h-4" /> },
+    { id: 'all', name: 'All Notes', color: 'text-blue-600', icon: <DocumentTextIcon className="w-4 h-4" /> },
+    { id: 'favorites', name: 'Favorites', color: 'text-pink-600', icon: <HeartIcon className="w-4 h-4" /> },
+    { id: 'recent', name: 'Recent', color: 'text-green-600', icon: <ClockIcon className="w-4 h-4" /> },
+    { id: 'work', name: 'Work', color: 'text-purple-600', icon: <BriefcaseIcon className="w-4 h-4" /> },
+    { id: 'personal', name: 'Personal', color: 'text-orange-600', icon: <HomeIcon className="w-4 h-4" /> },
   ];
 
   const [categories, setCategories] = useState<Category[]>(defaultCategories);
@@ -355,20 +356,20 @@ export default function CleanTakeNote() {
   };
 
   return (
-    <div className={`min-h-screen font-inter ${
+    <div className={`min-h-screen font-['Inter',sans-serif] ${
       darkMode 
-        ? 'bg-gray-900 text-white' 
-        : 'bg-gray-50 text-gray-900'
+        ? 'bg-[oklch(0.141_0.005_285.823)] text-[oklch(0.985_0_0)]' 
+        : 'bg-[oklch(1_0_0)] text-[oklch(0.141_0.005_285.823)]'
     }`}>
       <Toaster 
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
-            background: darkMode ? '#1f2937' : '#ffffff',
-            color: darkMode ? '#ffffff' : '#000000',
-            border: `1px solid ${darkMode ? '#374151' : '#e5e7eb'}`,
-            borderRadius: '8px',
+            background: darkMode ? 'oklch(0.21 0.006 285.885)' : 'oklch(1 0 0)',
+            color: darkMode ? 'oklch(0.985 0 0)' : 'oklch(0.141 0.005 285.823)',
+            border: `1px solid ${darkMode ? 'oklch(1 0 0 / 10%)' : 'oklch(0.92 0.004 286.32)'}`,
+            borderRadius: '0.5rem',
             fontSize: '14px',
             fontFamily: 'Inter, sans-serif',
           },
@@ -376,36 +377,31 @@ export default function CleanTakeNote() {
       />
 
       <div className="flex h-screen">
-        {/* Professional Sidebar */}
+        {/* Rugplay-style Sidebar */}
         <motion.div
           initial={false}
-          animate={{ width: sidebarCollapsed ? 0 : 320 }}
+          animate={{ width: sidebarCollapsed ? 0 : 280 }}
           className={`${
             darkMode 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-200'
-          } border-r flex flex-col overflow-hidden shadow-lg`}
+              ? 'bg-[oklch(0.21_0.006_285.885)] border-[oklch(1_0_0_/_10%)]' 
+              : 'bg-[oklch(0.985_0_0)] border-[oklch(0.92_0.004_286.32)]'
+          } border-r flex flex-col overflow-hidden`}
         >
           {/* Sidebar Header */}
-          <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <DocumentTextIcon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold">TakeNote</h1>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Professional Notes
-                  </p>
-                </div>
-              </div>
+          <div className="p-4 border-b border-[oklch(1_0_0_/_10%)]">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-[oklch(0.637_0.237_25.331)] rounded-sm flex items-center justify-center">
+                  <DocumentTextIcon className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-base font-semibold">TakeNote</span>
+              </div>
+              <div className="flex items-center gap-1">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={createNewNote}
-                  className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all shadow-md"
+                  className="p-1.5 rounded-md bg-[oklch(0.637_0.237_25.331)] text-white hover:bg-[oklch(0.6_0.22_25.331)] transition-colors"
                 >
                   <PlusIcon className="w-4 h-4" />
                 </motion.button>
@@ -413,10 +409,10 @@ export default function CleanTakeNote() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`p-1.5 rounded-md transition-colors ${
                     darkMode 
-                      ? 'hover:bg-gray-700 text-gray-300' 
-                      : 'hover:bg-gray-100 text-gray-600'
+                      ? 'hover:bg-[oklch(0.274_0.006_286.033)]' 
+                      : 'hover:bg-[oklch(0.967_0.001_286.375)]'
                   }`}
                 >
                   <Bars3Icon className="w-4 h-4" />
@@ -427,7 +423,7 @@ export default function CleanTakeNote() {
             {/* Search */}
             <div className="relative">
               <MagnifyingGlassIcon className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
+                darkMode ? 'text-[oklch(0.705_0.015_286.067)]' : 'text-[oklch(0.552_0.016_285.938)]'
               }`} />
               <input
                 id="search-input"
@@ -435,49 +431,49 @@ export default function CleanTakeNote() {
                 placeholder="Search notes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm transition-all ${
+                className={`w-full pl-10 pr-4 py-2 rounded-md border text-sm ${
                   darkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' 
-                    : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
-                } focus:outline-none focus:ring-2 focus:ring-blue-500/20`}
+                    ? 'bg-[oklch(1_0_0_/_15%)] border-[oklch(1_0_0_/_10%)] text-[oklch(0.985_0_0)] placeholder-[oklch(0.705_0.015_286.067)]' 
+                    : 'bg-[oklch(0.967_0.001_286.375)] border-[oklch(0.92_0.004_286.32)] text-[oklch(0.141_0.005_285.823)] placeholder-[oklch(0.552_0.016_285.938)]'
+                } focus:outline-none focus:ring-2 focus:ring-[oklch(0.637_0.237_25.331)] transition-all`}
               />
             </div>
           </div>
 
           {/* Categories */}
-          <div className="p-6">
-            <h3 className={`text-xs font-semibold uppercase tracking-wider mb-4 ${
-              darkMode ? 'text-gray-400' : 'text-gray-500'
+          <div className="p-4">
+            <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 ${
+              darkMode ? 'text-[oklch(0.705_0.015_286.067)]' : 'text-[oklch(0.552_0.016_285.938)]'
             }`}>
               Categories
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {categories.map((category) => (
                 <motion.button
                   key={category.id}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`w-full flex items-center justify-between p-2 rounded-md text-sm transition-all ${
                     selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                      ? 'bg-[oklch(0.637_0.237_25.331)] text-white'
                       : darkMode
-                      ? 'hover:bg-gray-700 text-gray-300'
-                      : 'hover:bg-gray-100 text-gray-700'
+                      ? 'hover:bg-[oklch(0.274_0.006_286.033)] text-[oklch(0.985_0_0)]'
+                      : 'hover:bg-[oklch(0.967_0.001_286.375)] text-[oklch(0.141_0.005_285.823)]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <span className={selectedCategory === category.id ? 'text-white' : category.color}>
                       {category.icon}
                     </span>
-                    <span>{category.name}</span>
+                    <span className="font-medium">{category.name}</span>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-md ${
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${
                     selectedCategory === category.id
                       ? 'bg-white/20 text-white'
                       : darkMode
-                      ? 'bg-gray-600 text-gray-300'
-                      : 'bg-gray-200 text-gray-600'
+                      ? 'bg-[oklch(0.274_0.006_286.033)] text-[oklch(0.705_0.015_286.067)]'
+                      : 'bg-[oklch(0.967_0.001_286.375)] text-[oklch(0.552_0.016_285.938)]'
                   }`}>
                     {getCategoryCount(category.id)}
                   </span>
@@ -488,15 +484,15 @@ export default function CleanTakeNote() {
 
           {/* Notes List */}
           <div className="flex-1 overflow-hidden">
-            <div className="px-6 pb-4">
+            <div className="px-4 pb-2">
               <h3 className={`text-xs font-semibold uppercase tracking-wider ${
-                darkMode ? 'text-gray-400' : 'text-gray-500'
+                darkMode ? 'text-[oklch(0.705_0.015_286.067)]' : 'text-[oklch(0.552_0.016_285.938)]'
               }`}>
                 Notes ({filteredNotes.length})
               </h3>
             </div>
-            <div className="flex-1 overflow-y-auto px-6 pb-6">
-              <div className="space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 pb-4">
+              <div className="space-y-2">
                 <AnimatePresence>
                   {filteredNotes.map((note) => (
                     <motion.div
@@ -504,23 +500,23 @@ export default function CleanTakeNote() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{ scale: 1.01 }}
                       onClick={() => setSelectedNote(note)}
-                      className={`p-4 rounded-lg cursor-pointer transition-all ${
+                      className={`p-3 rounded-md cursor-pointer transition-all ${
                         selectedNote?.id === note.id
                           ? darkMode
-                            ? 'bg-blue-600/20 border-2 border-blue-500/50'
-                            : 'bg-blue-50 border-2 border-blue-200'
+                            ? 'bg-[oklch(0.637_0.237_25.331)]/20 border border-[oklch(0.637_0.237_25.331)]/50'
+                            : 'bg-[oklch(0.637_0.237_25.331)]/10 border border-[oklch(0.637_0.237_25.331)]/30'
                           : darkMode
-                          ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600'
-                          : 'bg-white hover:bg-gray-50 border border-gray-200 shadow-sm hover:shadow-md'
+                          ? 'bg-[oklch(0.274_0.006_286.033)] hover:bg-[oklch(0.274_0.006_286.033)]/80 border border-[oklch(1_0_0_/_10%)]'
+                          : 'bg-[oklch(1_0_0)] hover:bg-[oklch(0.967_0.001_286.375)] border border-[oklch(0.92_0.004_286.32)] shadow-sm'
                       }`}
                     >
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start justify-between mb-2">
                         <h4 className="font-semibold text-sm truncate flex-1">
                           {note.title}
                         </h4>
-                        <div className="flex items-center gap-2 ml-3">
+                        <div className="flex items-center gap-1 ml-2">
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
@@ -532,37 +528,37 @@ export default function CleanTakeNote() {
                               note.favorite
                                 ? 'text-pink-500 hover:text-pink-600'
                                 : darkMode
-                                ? 'text-gray-400 hover:text-pink-400'
-                                : 'text-gray-400 hover:text-pink-500'
+                                ? 'text-[oklch(0.705_0.015_286.067)] hover:text-pink-400'
+                                : 'text-[oklch(0.552_0.016_285.938)] hover:text-pink-500'
                             }`}
                           >
                             {note.favorite ? (
-                              <HeartIconSolid className="w-4 h-4" />
+                              <HeartIconSolid className="w-3 h-3" />
                             ) : (
-                              <HeartIcon className="w-4 h-4" />
+                              <HeartIcon className="w-3 h-3" />
                             )}
                           </motion.button>
                         </div>
                       </div>
                       <p className={`text-xs ${
-                        darkMode ? 'text-gray-400' : 'text-gray-600'
-                      } line-clamp-2 mb-3`}>
-                        {note.content.substring(0, 100)}...
+                        darkMode ? 'text-[oklch(0.705_0.015_286.067)]' : 'text-[oklch(0.552_0.016_285.938)]'
+                      } line-clamp-2 mb-2`}>
+                        {note.content.substring(0, 80)}...
                       </p>
                       <div className="flex items-center justify-between">
                         <span className={`text-xs ${
-                          darkMode ? 'text-gray-500' : 'text-gray-400'
+                          darkMode ? 'text-[oklch(0.705_0.015_286.067)]' : 'text-[oklch(0.552_0.016_285.938)]'
                         }`}>
                           {note.updatedAt.toLocaleDateString()}
                         </span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           {note.tags.slice(0, 2).map((tag) => (
                             <span
                               key={tag}
-                              className={`text-xs px-2 py-1 rounded-md ${
+                              className={`text-xs px-1.5 py-0.5 rounded ${
                                 darkMode 
-                                  ? 'bg-gray-600 text-gray-300' 
-                                  : 'bg-gray-100 text-gray-600'
+                                  ? 'bg-[oklch(0.274_0.006_286.033)] text-[oklch(0.705_0.015_286.067)]' 
+                                  : 'bg-[oklch(0.967_0.001_286.375)] text-[oklch(0.552_0.016_285.938)]'
                               }`}
                             >
                               {tag}
@@ -583,51 +579,49 @@ export default function CleanTakeNote() {
           {selectedNote ? (
             <>
               {/* Header */}
-              <div className={`px-8 py-6 border-b ${
+              <div className={`px-6 py-4 border-b ${
                 darkMode 
-                  ? 'border-gray-700 bg-gray-800' 
-                  : 'border-gray-200 bg-white'
-              } shadow-sm`}>
+                  ? 'border-[oklch(1_0_0_/_10%)] bg-[oklch(0.21_0.006_285.885)]' 
+                  : 'border-[oklch(0.92_0.004_286.32)] bg-[oklch(0.985_0_0)]'
+              }`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <input
                       type="text"
                       value={selectedNote.title}
                       onChange={(e) => setSelectedNote({ ...selectedNote, title: e.target.value })}
-                      className={`text-2xl font-bold bg-transparent border-none outline-none ${
-                        darkMode ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'
-                      }`}
+                      className="text-xl font-bold bg-transparent border-none outline-none placeholder-gray-400"
                       placeholder="Note title..."
                     />
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => toggleFavorite(selectedNote.id)}
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-1.5 rounded-md transition-colors ${
                         selectedNote.favorite
                           ? 'text-pink-500 hover:text-pink-600'
                           : darkMode
-                          ? 'text-gray-400 hover:text-pink-400'
-                          : 'text-gray-400 hover:text-pink-500'
+                          ? 'text-[oklch(0.705_0.015_286.067)] hover:text-pink-400'
+                          : 'text-[oklch(0.552_0.016_285.938)] hover:text-pink-500'
                       }`}
                     >
                       {selectedNote.favorite ? (
-                        <HeartIconSolid className="w-6 h-6" />
+                        <HeartIconSolid className="w-5 h-5" />
                       ) : (
-                        <HeartIcon className="w-6 h-6" />
+                        <HeartIcon className="w-5 h-5" />
                       )}
                     </motion.button>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={formatNote}
-                      className={`p-3 rounded-lg transition-colors ${
+                      className={`p-2 rounded-md transition-colors ${
                         darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
+                          ? 'hover:bg-[oklch(0.274_0.006_286.033)]' 
+                          : 'hover:bg-[oklch(0.967_0.001_286.375)]'
                       }`}
                       title="Format with Prettier (Ctrl+Shift+F)"
                     >
@@ -637,12 +631,12 @@ export default function CleanTakeNote() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowPreview(!showPreview)}
-                      className={`p-3 rounded-lg transition-colors ${
+                      className={`p-2 rounded-md transition-colors ${
                         showPreview 
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md' 
+                          ? 'bg-[oklch(0.637_0.237_25.331)] text-white' 
                           : darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
+                          ? 'hover:bg-[oklch(0.274_0.006_286.033)]' 
+                          : 'hover:bg-[oklch(0.967_0.001_286.375)]'
                       }`}
                       title="Toggle Preview (Ctrl+P)"
                     >
@@ -652,10 +646,10 @@ export default function CleanTakeNote() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setDarkMode(!darkMode)}
-                      className={`p-3 rounded-lg transition-colors ${
+                      className={`p-2 rounded-md transition-colors ${
                         darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
+                          ? 'hover:bg-[oklch(0.274_0.006_286.033)]' 
+                          : 'hover:bg-[oklch(0.967_0.001_286.375)]'
                       }`}
                       title="Toggle Theme (Ctrl+D)"
                     >
@@ -665,10 +659,10 @@ export default function CleanTakeNote() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={exportNotes}
-                      className={`p-3 rounded-lg transition-colors ${
+                      className={`p-2 rounded-md transition-colors ${
                         darkMode 
-                          ? 'hover:bg-gray-700 text-gray-300' 
-                          : 'hover:bg-gray-100 text-gray-600'
+                          ? 'hover:bg-[oklch(0.274_0.006_286.033)]' 
+                          : 'hover:bg-[oklch(0.967_0.001_286.375)]'
                       }`}
                       title="Export All Notes"
                     >
@@ -694,9 +688,8 @@ export default function CleanTakeNote() {
                           fontFamily: 'Inter, sans-serif',
                         },
                         '.cm-content': {
-                          padding: '24px',
+                          padding: '20px',
                           minHeight: '100%',
-                          lineHeight: '1.6',
                         },
                         '.cm-focused': {
                           outline: 'none',
@@ -723,15 +716,15 @@ export default function CleanTakeNote() {
                       exit={{ width: 0, opacity: 0 }}
                       className={`border-l overflow-y-auto ${
                         darkMode 
-                          ? 'border-gray-700 bg-gray-800' 
-                          : 'border-gray-200 bg-white'
+                          ? 'border-[oklch(1_0_0_/_10%)] bg-[oklch(0.21_0.006_285.885)]' 
+                          : 'border-[oklch(0.92_0.004_286.32)] bg-[oklch(0.985_0_0)]'
                       }`}
                     >
-                      <div className="p-8">
+                      <div className="p-6">
                         <div
                           className={`prose max-w-none ${
                             darkMode ? 'prose-invert' : ''
-                          } prose-headings:font-bold prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-pre:bg-gray-100 prose-pre:border`}
+                          } prose-headings:font-bold prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded`}
                           dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(
                               marked(processLinkedNotes(selectedNote.content))
@@ -750,30 +743,28 @@ export default function CleanTakeNote() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center max-w-lg mx-auto px-8"
+                className="text-center max-w-md mx-auto px-8"
               >
-                <div className={`w-24 h-24 mx-auto mb-8 rounded-2xl flex items-center justify-center ${
+                <div className={`w-20 h-20 mx-auto mb-6 rounded-xl flex items-center justify-center ${
                   darkMode 
-                    ? 'bg-gradient-to-br from-blue-500/20 to-purple-600/20' 
-                    : 'bg-gradient-to-br from-blue-500/10 to-purple-600/10'
+                    ? 'bg-[oklch(0.637_0.237_25.331)]/20' 
+                    : 'bg-[oklch(0.637_0.237_25.331)]/10'
                 }`}>
-                  <DocumentTextIcon className="w-12 h-12 text-blue-500" />
+                  <DocumentTextIcon className="w-10 h-10 text-[oklch(0.637_0.237_25.331)]" />
                 </div>
-                <h2 className={`text-3xl font-bold mb-4 ${
-                  darkMode ? 'text-white' : 'text-gray-900'
-                }`}>
+                <h2 className="text-2xl font-bold mb-3">
                   Ready to create?
                 </h2>
-                <p className={`text-lg mb-8 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                <p className={`text-base mb-6 ${
+                  darkMode ? 'text-[oklch(0.705_0.015_286.067)]' : 'text-[oklch(0.552_0.016_285.938)]'
                 }`}>
-                  Select a note from the sidebar or create a new one to get started with your professional note-taking experience.
+                  Select a note from the sidebar or create a new one to get started.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={createNewNote}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="px-6 py-3 bg-[oklch(0.637_0.237_25.331)] text-white font-semibold rounded-md hover:bg-[oklch(0.6_0.22_25.331)] transition-colors"
                 >
                   Create Your First Note
                 </motion.button>
