@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355 7% 97%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 76% 36%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .trading-card {
+    @apply bg-card border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors;
+  }
+  
+  .neon-border {
+    @apply border border-neon-green/30 shadow-lg shadow-neon-green/10;
+  }
+  
+  .neon-text {
+    @apply text-neon-green drop-shadow-sm;
+  }
+  
+  .trading-up {
+    @apply text-trading-up;
+  }
+  
+  .trading-down {
+    @apply text-trading-down;
+  }
+  
+  .trading-neutral {
+    @apply text-trading-neutral;
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  }
+  
+  .glass-effect {
+    @apply bg-background/80 backdrop-blur-sm border border-border/50;
+  }
+  
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(55 65 81) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(55 65 81);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(75 85 99);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom animations */
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.ticker {
+  animation: ticker 30s linear infinite;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #00ff88;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Glow effects */
+.glow-green {
+  box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 30px #00ff88;
+}
+
+.glow-red {
+  box-shadow: 0 0 10px #ff0066, 0 0 20px #ff0066, 0 0 30px #ff0066;
+}
+
+.glow-blue {
+  box-shadow: 0 0 10px #0088ff, 0 0 20px #0088ff, 0 0 30px #0088ff;
+}
+
+/* Code syntax highlighting */
+.code-block {
+  @apply bg-muted/50 border border-border rounded-md p-4 font-mono text-sm overflow-x-auto;
+}
+
+/* Rich text editor styles */
+.prose {
+  @apply text-foreground max-w-none;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply text-foreground;
+}
+
+.prose a {
+  @apply text-primary hover:text-primary/80;
+}
+
+.prose code {
+  @apply bg-muted px-1 py-0.5 rounded text-sm;
+}
+
+.prose pre {
+  @apply bg-muted border border-border rounded-md p-4 overflow-x-auto;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary pl-4 italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .mobile-hide {
+    display: none;
+  }
+  
+  .mobile-full {
+    width: 100%;
+  }
+}

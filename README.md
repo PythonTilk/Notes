@@ -1,209 +1,194 @@
-# NoteVault - Note Management System
+# NoteVault - Modern Note Trading Platform
 
-A modern, feature-rich note-taking application built with Spring Boot. Create, organize, and share notes with advanced features like rich text editing, image uploads, and collaborative sharing.
+A modern, full-stack note-taking application with a trading-style dashboard inspired by [rugplay.com](https://rugplay.com/). Built with Next.js 14, TypeScript, PostgreSQL, and modern web technologies.
 
-## ✨ Features
+## 🚀 Features
 
-- **Rich Text Editing** - WYSIWYG editor with formatting, lists, links, and code syntax highlighting
-- **Multiple Note Types** - Text, Rich Text, and Code notes with syntax highlighting
-- **User Profiles** - Custom avatars, display names, and biographies  
-- **Note Sharing** - Private, shared with specific users, or public notes
-- **Visual Organization** - Drag-and-drop interface with color-coded notes
-- **Dark Mode** - Toggle between light and dark themes
-- **Image Support** - Upload and embed images in notes
-- **Search & Tags** - Find notes by content, tags, or author
-- **Mobile Responsive** - Works seamlessly on desktop, tablet, and mobile
+### Core Features
+- **Modern Dashboard**: Trading-style interface with real-time updates
+- **Note Management**: Create, edit, and organize notes with rich text support
+- **User Authentication**: Secure authentication with NextAuth.js (OAuth + credentials)
+- **Admin Dashboard**: Comprehensive admin panel for user and system management
+- **Real-time Trading**: Live trading simulation with market data
+- **Portfolio Management**: Track your note investments and performance
+- **Leaderboards**: Competitive rankings and achievements
 
-## 🚀 Quick Local Setup
+### Technical Features
+- **Next.js 14**: App Router, Server Components, and modern React features
+- **TypeScript**: Full type safety throughout the application
+- **PostgreSQL**: Robust database with Prisma ORM
+- **Tailwind CSS**: Modern, responsive design system
+- **Real-time Updates**: Live data with optimistic updates
+- **Docker Support**: Easy deployment with Docker containers
+- **Admin Panel**: Complete administrative interface
+
+## 🛠 Tech Stack
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: NextAuth.js
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Deployment**: Docker, Docker Compose
+
+## 📦 Installation
 
 ### Prerequisites
+- Node.js 18+ 
+- PostgreSQL 15+
+- npm or yarn
 
-- **Java 17+** (OpenJDK recommended)
-- **MySQL 5.7+** or **MariaDB 10.3+**
-- **Maven 3.6+** (included via wrapper)
+### Local Development
 
-### 1. Clone Repository
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/PythonTilk/Notes.git
+   cd Notes
+   ```
 
-```bash
-git clone https://github.com/PythonTilk/Notes.git
-cd Notes
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### 2. Install Dependencies
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Update `.env.local` with your configuration:
+   ```env
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/notevault"
+   NEXTAUTH_URL="http://localhost:53313"
+   NEXTAUTH_SECRET="your-secret-key"
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   GITHUB_CLIENT_ID="your-github-client-id"
+   GITHUB_CLIENT_SECRET="your-github-client-secret"
+   ```
 
-#### Ubuntu/Debian:
-```bash
-sudo apt update
-sudo apt install openjdk-17-jdk mariadb-server
-sudo systemctl start mariadb
-sudo systemctl enable mariadb
-```
+4. **Set up the database**
+   ```bash
+   npx prisma migrate dev
+   npx prisma db seed
+   ```
 
-#### macOS:
-```bash
-brew install openjdk@17 mariadb
-brew services start mariadb
-```
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-#### Windows:
-1. Download [OpenJDK 17](https://adoptium.net/)
-2. Download [MariaDB](https://mariadb.org/download/)
-3. Start MariaDB service
+6. **Open your browser**
+   Navigate to [http://localhost:53313](http://localhost:53313)
 
-### 3. Setup Database
+### Docker Deployment
 
-```bash
-# Import database schema
-mysql -u root -p < its-projekt18.6.sql
+1. **Using Docker Compose (Recommended)**
+   ```bash
+   docker-compose up -d
+   ```
 
-# Verify setup
-mysql -u notizuser -pnotizpassword -e "SHOW TABLES;" notizprojekt
-```
+2. **Run database migrations**
+   ```bash
+   docker-compose exec app npx prisma migrate deploy
+   docker-compose exec app npx prisma db seed
+   ```
 
-### 4. Run Application
+## 🔐 Default Admin Account
 
-```bash
-# Start the application
-./mvnw spring-boot:run
-```
+When no users exist in the database, an admin account is automatically created:
 
-Access at: **http://localhost:12000**
+- **Email**: `admin@notevault.com`
+- **Password**: `admin123`
+- **Role**: `ADMIN`
 
-**Test Account:** `testuser123` / `password123`
+## 🎨 Design Inspiration
 
-## 🛠️ Development
+The design is heavily inspired by [rugplay.com](https://rugplay.com/) with:
+- Dark theme with neon accents
+- Trading-style dashboard layout
+- Real-time market data visualization
+- Modern card-based UI components
+- Responsive design for all devices
 
-### Project Structure
+## 📱 Key Pages
 
-```
-src/main/
-├── java/notizprojekt/web/
-│   ├── NotizprojektWebApplication.java    # Main application
-│   ├── controller/                        # Web & API controllers
-│   ├── model/                            # Entity classes (User, Note)
-│   ├── service/                          # Business logic
-│   ├── repository/                       # Data access layer
-│   └── config/                           # Configuration classes
-├── resources/
-│   ├── application.properties            # App configuration
-│   ├── static/                          # CSS, JS, images
-│   └── templates/                       # Thymeleaf templates
-└── its-projekt18.6.sql                  # Database schema
-```
+- **Dashboard** (`/`): Main trading dashboard with market overview
+- **Notes** (`/notes`): Note management and creation
+- **Market** (`/market`): Trading marketplace for notes
+- **Portfolio** (`/portfolio`): Personal investment tracking
+- **Admin** (`/admin`): Administrative dashboard (admin only)
+- **Leaderboard** (`/leaderboard`): User rankings and achievements
 
-### Configuration
+## 🔧 Development
 
-Edit `src/main/resources/application.properties`:
+### Database Schema
 
-```properties
-# Database
-spring.datasource.url=jdbc:mysql://localhost:3306/notizprojekt
-spring.datasource.username=notizuser
-spring.datasource.password=notizpassword
+The application uses a comprehensive PostgreSQL schema with:
+- **Users**: Authentication and profile management
+- **Notes**: Content creation and management
+- **Trades**: Trading transactions and history
+- **Portfolios**: Investment tracking
+- **Activities**: User activity logging
 
-# Server
-server.port=12000
-server.address=0.0.0.0
+### API Routes
 
-# File Upload
-spring.servlet.multipart.max-file-size=5MB
-spring.servlet.multipart.max-request-size=25MB
+- `GET/POST /api/notes` - Note management
+- `GET /api/users` - User management (admin only)
+- `GET /api/trades` - Trading operations
+- `GET /api/admin/*` - Admin operations
 
-# Development
-spring.thymeleaf.cache=false
-logging.level.notizprojekt=DEBUG
-```
+### Environment Variables
 
-### Building for Production
+Required environment variables:
+- `DATABASE_URL` - PostgreSQL connection string
+- `NEXTAUTH_URL` - Application URL
+- `NEXTAUTH_SECRET` - NextAuth.js secret
+- OAuth provider credentials (optional)
 
-```bash
-# Build JAR file
-./mvnw clean package
+## 🚀 Deployment
 
-# Run production build
-java -jar target/notizprojekt-web-0.0.1-SNAPSHOT.jar
-```
+### Production Deployment
 
-## 🧪 Testing
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
 
-```bash
-# Run all tests
-./mvnw test
+2. **Start production server**
+   ```bash
+   npm start
+   ```
 
-# Run with coverage
-./mvnw test jacoco:report
-```
-
-### Manual Testing Checklist
-
-- [ ] User registration and login
-- [ ] Creating different note types (text, rich text, code)
-- [ ] Rich text editor toolbar functionality
-- [ ] Note sharing and privacy settings
-- [ ] Image upload functionality
-- [ ] Profile management with avatar upload
-- [ ] Search and filtering
-- [ ] Dark mode toggle
-- [ ] Mobile responsiveness
-- [ ] Note view modal for public notes
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Port already in use:**
-```bash
-sudo lsof -t -i:12000 | xargs kill -9
-```
-
-**Database connection failed:**
-```bash
-sudo systemctl status mariadb
-mysql -u notizuser -pnotizpassword -h localhost notizprojekt
-```
-
-**Java version issues:**
-```bash
-java -version  # Should show Java 17+
-export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-```
-
-**Maven build issues:**
-```bash
-rm -rf ~/.m2/repository
-./mvnw clean install
-```
-
-## 🌐 Production Deployment
-
-For production server setup with SSL, domain configuration, and security hardening:
-
-**[SERVER_SETUP.md](SERVER_SETUP.md)** - Complete production deployment guide
-
-### Quick Production Install
+### Docker Production
 
 ```bash
-# One-liner (Method 1)
-curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh | sudo bash -s install
-
-# One-liner (Method 2)
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh)" install
-
-# One-liner (Method 3 - with wget fallback)
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh 2>/dev/null || wget -qO- https://raw.githubusercontent.com/PythonTilk/Notes/main/setup.sh)" install
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-## 🛡️ Technology Stack
+## 🤝 Contributing
 
-- **Backend:** Spring Boot 2.7, Java 17, Spring Security
-- **Database:** MySQL/MariaDB with JPA/Hibernate
-- **Frontend:** Thymeleaf, HTML5, CSS3, JavaScript
-- **Build:** Maven with automated deployment scripts
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-Licensed under the terms in the [LICENSE](LICENSE) file.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by [rugplay.com](https://rugplay.com/) design and functionality
+- Built with [shadcn/ui](https://ui.shadcn.com/) components
+- Icons from [Lucide React](https://lucide.dev/)
+- Styling with [Tailwind CSS](https://tailwindcss.com/)
+
+## 📞 Support
+
+For support, email support@notevault.com or create an issue in the repository.
 
 ---
 
-**Need help?** Check the troubleshooting section above or see [SERVER_SETUP.md](SERVER_SETUP.md) for production deployment.
+**NoteVault** - Where notes meet trading. Built with ❤️ and modern web technologies.

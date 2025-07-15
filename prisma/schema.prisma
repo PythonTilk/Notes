@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  username      String?   @unique
+  bio           String?
+  password      String?   // For credentials auth
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  balance       Float     @default(10000.0) // Starting balance like rugplay
+  totalEarnings Float     @default(0.0)
+  totalLosses   Float     @default(0.0)
+  level         Int       @default(1)
+  experience    Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  accounts     Account[]
+  sessions     Session[]
+  notes        Note[]
+  trades       Trade[]
+  portfolios   Portfolio[]
+  activities   Activity[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Note {
+  id          String     @id @default(cuid())
+  title       String
+  content     String     @db.Text
+  type        NoteType   @default(TEXT)
+  visibility  Visibility @default(PRIVATE)
+  tags        String[]
+  color       String?    @default("#3b82f6")
+  isPinned    Boolean    @default(false)
+  isArchived  Boolean    @default(false)
+  marketCap   Float?     @default(0) // For trading-style notes
+  volume24h   Float?     @default(0)
+  priceChange Float?     @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
+
+model Trade {
+  id        String    @id @default(cuid())
+  type      TradeType
+  noteId    String
+  amount    Float
+  price     Float
+  total     Float
+  profit    Float?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("trades")
+}
+
+model Portfolio {
+  id           String   @id @default(cuid())
+  noteId       String
+  quantity     Float
+  averagePrice Float
+  currentValue Float
+  totalReturn  Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, noteId])
+  @@map("portfolios")
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  title       String
+  description String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum NoteType {
+  TEXT
+  RICH_TEXT
+  CODE
+  MARKDOWN
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+  SHARED
+}
+
+enum TradeType {
+  BUY
+  SELL
+}
+
+enum ActivityType {
+  NOTE_CREATED
+  NOTE_UPDATED
+  NOTE_DELETED
+  TRADE_EXECUTED
+  LEVEL_UP
+  ACHIEVEMENT_UNLOCKED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  TRADE_ALERT
+  SYSTEM
+}

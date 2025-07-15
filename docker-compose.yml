@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: notevault-postgres
+    environment:
+      POSTGRES_DB: notevault
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notevault-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: notevault-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - notevault-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notevault-app
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/notevault
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=your-secret-key-here
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - notevault-network
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  notevault-network:
+    driver: bridge
