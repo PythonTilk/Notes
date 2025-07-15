@@ -323,6 +323,84 @@ We welcome contributions! Here's how to get started:
 - **Framework**: [Next.js](https://nextjs.org/)
 - **Database**: [Prisma](https://prisma.io/) + [PostgreSQL](https://postgresql.org/)
 
+## 📝 TODO List & Roadmap
+
+### 🎯 Planned Features
+
+#### Real-time Collaboration
+- [ ] **Live Cursor Tracking**: See other users' cursors in workspaces
+- [ ] **Real-time Note Updates**: Live synchronization of note changes
+- [ ] **User Presence Indicators**: Show who's online in each workspace
+- [ ] **WebSocket Integration**: Replace polling with real-time connections
+
+#### Enhanced Workspace Features
+- [ ] **Workspace Templates**: Pre-built workspace layouts
+- [ ] **Export Functionality**: Export workspace as PDF/image
+- [ ] **Workspace Activity Feeds**: Timeline of all workspace activities
+- [ ] **Search Across Workspaces**: Global search functionality
+- [ ] **Connected Notes**: Link notes together like in n8n workflows
+- [ ] **Note Relationships**: Visual connections between related notes
+
+#### Advanced File Management
+- [ ] **File Sharing**: Share files within workspaces
+- [ ] **Image Preview & Editing**: Built-in image viewer and basic editing
+- [ ] **File Version History**: Track changes to uploaded files
+- [ ] **Drag & Drop Upload**: Direct file upload to canvas
+
+#### Communication Features
+- [ ] **Workspace-specific Chat**: Private chat channels per workspace
+- [ ] **@Mentions & Notifications**: Tag users and send notifications
+- [ ] **Message Threading**: Reply to specific messages
+- [ ] **Emoji Reactions**: React to messages with emojis
+
+#### AI & Automation
+- [ ] **AI Summarizer**: Automatically summarize long notes and conversations
+- [ ] **Smart Note Suggestions**: AI-powered note recommendations
+- [ ] **Auto-tagging**: Intelligent tag suggestions for notes
+- [ ] **Content Analysis**: Extract insights from workspace content
+
+#### System Enhancements
+- [ ] **Advanced Backup System**: Incremental backups and restore functionality
+- [ ] **System Health Dashboard**: Comprehensive monitoring and alerts
+- [ ] **API Rate Limiting**: Protect against abuse
+- [ ] **Advanced Audit Logs**: More detailed tracking and reporting
+- [ ] **Multi-language Support**: Internationalization
+- [ ] **Plugin System**: Extensible architecture for custom features
+
+#### Mobile & Accessibility
+- [ ] **Progressive Web App**: Offline functionality and mobile app experience
+- [ ] **Touch Gestures**: Mobile-optimized interactions
+- [ ] **Accessibility Improvements**: WCAG compliance
+- [ ] **Keyboard Shortcuts**: Power user features
+
+#### Integration & API
+- [ ] **REST API Documentation**: Complete API documentation
+- [ ] **Webhook Support**: External integrations
+- [ ] **Third-party Integrations**: Slack, Discord, GitHub, etc.
+- [ ] **Import/Export**: Support for various file formats
+
+### 🚧 Current Architecture Pivot
+
+**Status**: Transitioning from trading-style app to collaborative workspace platform
+
+**Completed**:
+- ✅ Database schema redesign for workspaces
+- ✅ Admin dashboard with real functionality
+- ✅ User role management (Admin/Moderator/User)
+- ✅ System settings with maintenance mode
+- ✅ Audit logging and security features
+- ✅ Canvas-style note system with drag & drop
+- ✅ Public chat system
+- ✅ File management system
+- ✅ Trash system with 24h retention
+- ✅ Admin announcements with expiry
+
+**In Progress**:
+- 🔄 UI components for new architecture
+- 🔄 Real-time features implementation
+- 🔄 Workspace invitation system
+- 🔄 Enhanced admin dashboard
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

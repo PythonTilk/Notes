@@ -64,6 +64,7 @@ model User {
   chatMessages      ChatMessage[]
   files             File[]
   announcements     Announcement[]
+  auditLogs         AuditLog[]
 
   @@map("users")
 }
@@ -186,6 +187,53 @@ model Announcement {
   @@map("announcements")
 }
 
+model SystemSettings {
+  id                    String   @id @default(cuid())
+  maintenanceMode       Boolean  @default(false)
+  maintenanceMessage    String?
+  backupSchedule        String   @default("0 2 * * *") // Daily at 2 AM
+  lastBackup            DateTime?
+  maxFileSize           Int      @default(10485760) // 10MB in bytes
+  allowedFileTypes      String[] @default(["image/jpeg", "image/png", "image/gif", "application/pdf", "text/plain"])
+  maxWorkspacesPerUser  Int      @default(10)
+  maxNotesPerWorkspace  Int      @default(1000)
+  chatRetentionDays     Int      @default(30)
+  trashRetentionHours   Int      @default(24)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  resource    String
+  resourceId  String?
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  @@map("audit_logs")
+}
+
+model Backup {
+  id          String      @id @default(cuid())
+  filename    String
+  size        Int
+  status      BackupStatus @default(PENDING)
+  error       String?
+  createdAt   DateTime    @default(now())
+  completedAt DateTime?
+
+  @@map("backups")
+}
+
 model Activity {
   id          String       @id @default(cuid())
   type        ActivityType
@@ -243,4 +291,15 @@ enum ActivityType {
   FILE_DELETED
   CHAT_MESSAGE
   ANNOUNCEMENT_CREATED
+  USER_ROLE_CHANGED
+  SYSTEM_SETTINGS_UPDATED
+  BACKUP_CREATED
+  MAINTENANCE_MODE_TOGGLED
+}
+
+enum BackupStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
