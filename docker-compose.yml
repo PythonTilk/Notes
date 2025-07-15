@@ -36,11 +36,11 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/notevault
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=http://localhost:12000
       - NEXTAUTH_SECRET=your-secret-key-here
       - REDIS_URL=redis://redis:6379
     ports:
-      - "3000:3000"
+      - "12000:12000"
     depends_on:
       - postgres
       - redis

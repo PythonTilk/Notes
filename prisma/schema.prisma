@@ -79,7 +79,7 @@ model VerificationToken {
 model Note {
   id          String     @id @default(cuid())
   title       String
-  content     String     @db.Text
+  content     String @db.Text
   type        NoteType   @default(TEXT)
   visibility  Visibility @default(PRIVATE)
   tags        String[]

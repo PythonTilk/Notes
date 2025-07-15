@@ -4,9 +4,9 @@
   "description": "Modern note-taking application with trading-style dashboard inspired by rugplay.com",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 53313",
+    "dev": "next dev -p 12000",
     "build": "next build",
-    "start": "next start -p 53313",
+    "start": "next start -p 12000",
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
