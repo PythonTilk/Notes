@@ -49,22 +49,21 @@ model User {
   password      String?   // For credentials auth
   role          UserRole  @default(USER)
   isActive      Boolean   @default(true)
-  balance       Float     @default(10000.0) // Starting balance like rugplay
-  totalEarnings Float     @default(0.0)
-  totalLosses   Float     @default(0.0)
-  level         Int       @default(1)
-  experience    Int       @default(0)
+  isOnline      Boolean   @default(false)
+  lastSeen      DateTime  @default(now())
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
 
-  accounts     Account[]
-  sessions     Session[]
-  notes        Note[]
-  trades       Trade[]
-  portfolios   Portfolio[]
-  activities   Activity[]
-  notifications Notification[]
+  accounts          Account[]
+  sessions          Session[]
+  notes             Note[]
+  activities        Activity[]
+  ownedWorkspaces   Workspace[] @relation("WorkspaceOwner")
+  workspaceMembers  WorkspaceMember[]
+  chatMessages      ChatMessage[]
+  files             File[]
+  announcements     Announcement[]
 
   @@map("users")
 }
@@ -77,59 +76,114 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Note {
-  id          String     @id @default(cuid())
-  title       String
-  content     String @db.Text
-  type        NoteType   @default(TEXT)
-  visibility  Visibility @default(PRIVATE)
-  tags        String[]
-  color       String?    @default("#3b82f6")
-  isPinned    Boolean    @default(false)
-  isArchived  Boolean    @default(false)
-  marketCap   Float?     @default(0) // For trading-style notes
-  volume24h   Float?     @default(0)
-  priceChange Float?     @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String   @default("#3b82f6")
+  isPublic    Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // Relations
+  owner     User   @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   String
+  members   WorkspaceMember[]
+  notes     Note[]
+  activities Activity[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String   @id @default(cuid())
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime @default(now())
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_members")
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  type        NoteType @default(TEXT)
+  color       String   @default("#fbbf24")
+  tag         String?
+  positionX   Float    @default(0)
+  positionY   Float    @default(0)
+  width       Float    @default(300)
+  height      Float    @default(200)
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
 
   @@map("notes")
 }
 
-model Trade {
-  id        String    @id @default(cuid())
-  type      TradeType
-  noteId    String
-  amount    Float
-  price     Float
-  total     Float
-  profit    Float?
-  createdAt DateTime  @default(now())
+model File {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  path        String
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations
+  uploader    User   @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  uploaderId  String
 
-  @@map("trades")
+  @@map("files")
 }
 
-model Portfolio {
-  id           String   @id @default(cuid())
-  noteId       String
-  quantity     Float
-  averagePrice Float
-  currentValue Float
-  totalReturn  Float
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model ChatMessage {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  type      MessageType @default(TEXT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations
+  author    User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
 
-  @@unique([userId, noteId])
-  @@map("portfolios")
+  @@map("chat_messages")
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  isPinned    Boolean  @default(true)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId    String
+
+  @@map("announcements")
 }
 
 model Activity {
@@ -140,30 +194,25 @@ model Activity {
   metadata    Json?
   createdAt   DateTime     @default(now())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@map("activities")
-}
-
-model Notification {
-  id        String           @id @default(cuid())
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
 }
 
 enum UserRole {
   USER
   ADMIN
   MODERATOR
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 enum NoteType {
@@ -173,31 +222,25 @@ enum NoteType {
   MARKDOWN
 }
 
-enum Visibility {
-  PRIVATE
-  PUBLIC
-  SHARED
-}
-
-enum TradeType {
-  BUY
-  SELL
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
 }
 
 enum ActivityType {
   NOTE_CREATED
   NOTE_UPDATED
   NOTE_DELETED
-  TRADE_EXECUTED
-  LEVEL_UP
-  ACHIEVEMENT_UNLOCKED
-}
-
-enum NotificationType {
-  INFO
-  SUCCESS
-  WARNING
-  ERROR
-  TRADE_ALERT
-  SYSTEM
+  NOTE_MOVED
+  WORKSPACE_CREATED
+  WORKSPACE_UPDATED
+  WORKSPACE_DELETED
+  WORKSPACE_JOINED
+  WORKSPACE_LEFT
+  FILE_UPLOADED
+  FILE_DELETED
+  CHAT_MESSAGE
+  ANNOUNCEMENT_CREATED
 }
