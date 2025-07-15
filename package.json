@@ -8,7 +8,6 @@
     "build": "prisma generate && next build",
     "start": "next start -p 12000",
     "lint": "next lint",
-    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
