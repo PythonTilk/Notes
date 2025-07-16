@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from '@/components/session-provider';
+import { InstallPrompt, PWAStatus } from '@/components/pwa/InstallPrompt';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -13,17 +14,18 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || 'http://localhost:12000'),
-  title: 'NoteVault - Modern Note Trading Platform',
-  description: 'A modern note-taking application with trading-style dashboard inspired by rugplay.com',
-  keywords: ['notes', 'trading', 'dashboard', 'productivity', 'modern'],
+  title: 'NoteVault - Collaborative Workspace Platform',
+  description: 'A collaborative workspace platform for notes, files, and team communication with AI insights',
+  keywords: ['notes', 'collaboration', 'workspace', 'productivity', 'AI', 'real-time'],
   authors: [{ name: 'NoteVault Team' }],
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'NoteVault - Modern Note Trading Platform',
-    description: 'A modern note-taking application with trading-style dashboard',
+    title: 'NoteVault - Collaborative Workspace Platform',
+    description: 'A collaborative workspace platform with AI insights and real-time collaboration',
     type: 'website',
     locale: 'en_US',
     siteName: 'NoteVault',
@@ -58,6 +60,8 @@ export default function RootLayout({
           >
             <div className="min-h-screen bg-background">
               {children}
+              <InstallPrompt />
+              <PWAStatus />
             </div>
             <Toaster
               position="top-right"

@@ -63,8 +63,10 @@ model User {
   workspaceMembers  WorkspaceMember[]
   chatMessages      ChatMessage[]
   files             File[]
+  fileVersions      FileVersion[]
   announcements     Announcement[]
   auditLogs         AuditLog[]
+  aiInsights        AIInsight[]
 
   @@map("users")
 }
@@ -94,6 +96,7 @@ model Workspace {
   members   WorkspaceMember[]
   notes     Note[]
   activities Activity[]
+  aiInsights AIInsight[]
 
   @@map("workspaces")
 }
@@ -135,6 +138,11 @@ model Note {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
 
+  // Connected notes relationships
+  connectionsFrom NoteConnection[] @relation("FromNote")
+  connectionsTo   NoteConnection[] @relation("ToNote")
+  aiInsights      AIInsight[]
+
   @@map("notes")
 }
 
@@ -153,6 +161,7 @@ model File {
   // Relations
   uploader    User   @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
   uploaderId  String
+  versions    FileVersion[]
 
   @@map("files")
 }
@@ -250,6 +259,66 @@ model Activity {
   @@map("activities")
 }
 
+model NoteConnection {
+  id       String @id @default(cuid())
+  fromId   String
+  toId     String
+  label    String?
+  color    String @default("#6b7280")
+  style    ConnectionStyle @default(SOLID)
+  
+  fromNote Note @relation("FromNote", fields: [fromId], references: [id], onDelete: Cascade)
+  toNote   Note @relation("ToNote", fields: [toId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([fromId, toId])
+  @@map("note_connections")
+}
+
+model FileVersion {
+  id          String   @id @default(cuid())
+  version     Int
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  path        String
+  checksum    String   // For detecting duplicate versions
+  changelog   String?  // Optional description of changes
+  createdAt   DateTime @default(now())
+
+  // Relations
+  file        File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  fileId      String
+  uploader    User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  uploaderId  String
+
+  @@unique([fileId, version])
+  @@map("file_versions")
+}
+
+model AIInsight {
+  id          String   @id @default(cuid())
+  type        InsightType
+  title       String
+  content     String   @db.Text
+  confidence  Float    @default(0.0) // 0.0 to 1.0
+  metadata    Json?    // Additional data specific to insight type
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  note        Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId      String?
+
+  @@map("ai_insights")
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -302,4 +371,19 @@ enum BackupStatus {
   IN_PROGRESS
   COMPLETED
   FAILED
+}
+
+enum ConnectionStyle {
+  SOLID
+  DASHED
+  DOTTED
+}
+
+enum InsightType {
+  SUMMARY
+  SUGGESTION
+  PATTERN
+  DUPLICATE
+  IMPROVEMENT
+  RELATIONSHIP
 }
