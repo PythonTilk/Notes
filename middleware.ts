@@ -2,61 +2,22 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-// Routes that should be accessible during maintenance mode
-const maintenanceExemptRoutes = [
-  '/api/auth',
-  '/auth',
-  '/maintenance',
-  '/setup',
-  '/_next',
-  '/favicon.ico',
-];
-
 // Routes that require admin access
 const adminRoutes = [
   '/api/admin',
   '/admin',
 ];
 
-// Routes that require moderator or admin access
-const moderatorRoutes = [
-  '/api/admin/users', // User management for moderators
+// Public routes that don't require authentication
+const publicRoutes = [
+  '/auth',
+  '/setup',
+  '/maintenance',
+  '/api/auth',
+  '/api/setup',
+  '/_next',
+  '/favicon.ico',
 ];
-
-async function checkSetupStatus(): Promise<boolean> {
-  try {
-    // Import prisma directly to avoid fetch loop
-    const { prisma } = await import('./lib/prisma');
-    const { UserRole } = await import('@prisma/client');
-    
-    const adminCount = await prisma.user.count({
-      where: {
-        role: UserRole.ADMIN,
-      },
-    });
-    
-    return adminCount === 0;
-  } catch (error) {
-    console.error('Error checking setup status:', error);
-    return false;
-  }
-}
-
-async function checkMaintenanceMode(): Promise<{ enabled: boolean; message?: string }> {
-  try {
-    // Import prisma directly to avoid fetch loop
-    const { prisma } = await import('./lib/prisma');
-    
-    const settings = await prisma.systemSettings.findFirst();
-    return {
-      enabled: settings?.maintenanceMode || false,
-      message: settings?.maintenanceMessage || 'System is under maintenance. Please try again later.',
-    };
-  } catch (error) {
-    console.error('Error checking maintenance mode:', error);
-    return { enabled: false };
-  }
-}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -66,7 +27,6 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/auth/') ||
     pathname.startsWith('/api/setup') ||
-    pathname.startsWith('/api/admin/settings') ||
     pathname === '/favicon.ico' ||
     pathname.startsWith('/uploads/') ||
     pathname.includes('.')
@@ -74,51 +34,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow public routes
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
   try {
-    // Check setup status first
-    const setupRequired = await checkSetupStatus();
-    
-    if (setupRequired && pathname !== '/setup') {
-      return NextResponse.redirect(new URL('/setup', request.url));
-    }
-    
-    if (!setupRequired && pathname === '/setup') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-
-    // Skip further checks if setup is required
-    if (setupRequired) {
-      return NextResponse.next();
-    }
-
-    // Get user token
+    // Get user token for protected routes
     const token = await getToken({ req: request });
 
-    // Check maintenance mode
-    const maintenance = await checkMaintenanceMode();
-    
-    if (maintenance.enabled) {
-      // Allow admins to access during maintenance
-      if (token?.sub) {
-        // For API routes, we'll check role in the API itself
-        if (pathname.startsWith('/api/')) {
-          return NextResponse.next();
-        }
-        
-        // For UI routes, redirect non-admins to maintenance page
-        if (!maintenanceExemptRoutes.some(route => pathname.startsWith(route))) {
-          // We'll assume non-admin for UI and let the maintenance page handle it
-          return NextResponse.redirect(new URL('/maintenance', request.url));
-        }
-      } else {
-        // Redirect unauthenticated users to maintenance page
-        if (!maintenanceExemptRoutes.some(route => pathname.startsWith(route))) {
-          return NextResponse.redirect(new URL('/maintenance', request.url));
-        }
-      }
-    }
-
-    // Check admin routes
+    // Check admin routes - require authentication
     if (adminRoutes.some(route => pathname.startsWith(route))) {
       if (!token?.sub) {
         if (pathname.startsWith('/api/')) {

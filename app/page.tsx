@@ -74,6 +74,28 @@ export default function HomePage() {
     }
   }, [session, status, router]);
 
+  // Check if setup is required
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const response = await fetch('/api/setup');
+        if (response.ok) {
+          const { setupRequired } = await response.json();
+          if (setupRequired) {
+            router.push('/setup');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking setup status:', error);
+      }
+    };
+
+    if (session) {
+      checkSetup();
+    }
+  }, [session, router]);
+
   // Load workspaces
   useEffect(() => {
     const loadWorkspaces = async () => {

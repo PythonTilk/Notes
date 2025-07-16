@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,30 @@ export default function SetupPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [checkingSetup, setCheckingSetup] = useState(true);
   const router = useRouter();
+
+  // Check if setup is actually required
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const response = await fetch('/api/setup');
+        if (response.ok) {
+          const { setupRequired } = await response.json();
+          if (!setupRequired) {
+            router.push('/');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking setup status:', error);
+      } finally {
+        setCheckingSetup(false);
+      }
+    };
+
+    checkSetup();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +92,17 @@ export default function SetupPage() {
       [e.target.name]: e.target.value,
     });
   };
+
+  if (checkingSetup) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-400 mx-auto mb-4" />
+          <p className="text-slate-300">Checking setup status...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
