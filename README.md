@@ -32,7 +32,7 @@ A modern collaborative workspace platform with canvas-style notes, real-time cha
 # Clone and start
 git clone https://github.com/PythonTilk/Notes.git
 cd Notes
-git checkout complete-rewrite
+git checkout modern-rewrite
 
 # Start with Docker
 docker-compose up -d --build
@@ -46,7 +46,7 @@ docker-compose up -d --build
 # Prerequisites: Node.js 18+, PostgreSQL 15+
 git clone https://github.com/PythonTilk/Notes.git
 cd Notes
-git checkout complete-rewrite
+git checkout modern-rewrite
 npm install
 
 # Setup environment
