@@ -135,3 +135,29 @@ public/uploads/
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Backups
+backups/
+*.sql
+*.dump
+
+# Secrets and keys
+secrets/
+keys/
+*.secret
+*.pem
+*.key
+*.crt
+*.cert
+
+# Local development
+.local/
+local/
+
+# Cache
+.cache/
+*.cache
+
+# Build artifacts
+*.tar.gz
+*.zip
