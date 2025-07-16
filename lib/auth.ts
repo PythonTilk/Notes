@@ -97,9 +97,6 @@ export const authOptions: NextAuthOptions = {
             where: { email: user.email! },
             data: { 
               role: UserRole.ADMIN,
-              balance: 100000.0,
-              level: 10,
-              experience: 10000,
             },
           });
         }

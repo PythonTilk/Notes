@@ -543,7 +543,7 @@ export const EnhancedWorkspaceCanvas: React.FC<EnhancedWorkspaceCanvasProps> = (
             onCreateConnection={onConnectionCreate}
             onUpdateConnection={onConnectionUpdate}
             onDeleteConnection={onConnectionDelete}
-            selectedNoteId={selectedNote}
+            selectedNoteId={selectedNote || undefined}
             canvasRef={canvasRef}
           />
 

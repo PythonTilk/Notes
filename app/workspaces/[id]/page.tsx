@@ -278,12 +278,12 @@ export default function WorkspacePage() {
                     <div
                       key={member.id}
                       className="relative"
-                      title={`${member.user.username} (${member.role})`}
+                      title={`${member.user.name || member.user.username || 'User'} (${member.role})`}
                     >
                       {member.user.image ? (
                         <img
                           src={member.user.image}
-                          alt={member.user.username}
+                          alt={member.user.name || member.user.username || 'User'}
                           className="w-8 h-8 rounded-full border-2 border-white"
                         />
                       ) : (

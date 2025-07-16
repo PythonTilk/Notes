@@ -22,7 +22,7 @@ app.prepare().then(() => {
   });
 
   // Initialize WebSocket server
-  const { initializeWebSocketServer } = require('./server/websocket.ts');
+  const { initializeWebSocketServer } = require('./server/websocket.js');
   initializeWebSocketServer(server);
 
   server

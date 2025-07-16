@@ -71,7 +71,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
           where: { id: token }, // Simplified - in reality, decode JWT
           select: {
             id: true,
-            username: true,
+            email: true,
             name: true,
             image: true,
             role: true,
@@ -81,8 +81,8 @@ export const initializeWebSocket = (server: HTTPServer) => {
         if (user) {
           const socketUser: SocketUser = {
             id: user.id,
-            username: user.username,
-            name: user.name || user.username,
+            username: user.name || user.email || 'Unknown',
+            name: user.name || user.email || 'Unknown',
             image: user.image || undefined,
             role: user.role,
           };
@@ -130,7 +130,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
         // Notify others in workspace
         socket.to(`workspace:${workspaceId}`).emit('user_joined', {
           userId: user.id,
-          username: user.username,
+          username: user.name,
           name: user.name,
           image: user.image,
         });
@@ -157,7 +157,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
         x: data.x,
         y: data.y,
         userId: user.id,
-        username: user.username,
+        username: user.name,
         color: `hsl(${user.id.charCodeAt(0) * 137.5 % 360}, 70%, 50%)`, // Generate color from user ID
       };
 
@@ -177,17 +177,13 @@ export const initializeWebSocket = (server: HTTPServer) => {
           data: {
             title: noteData.title,
             content: noteData.content,
-            x: noteData.x,
-            y: noteData.y,
-            width: noteData.width,
-            height: noteData.height,
             updatedAt: new Date(),
           },
           include: {
             author: {
               select: {
                 id: true,
-                username: true,
+                email: true,
                 name: true,
                 image: true,
               }
@@ -198,7 +194,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
         // Broadcast to other users in workspace
         socket.to(`workspace:${noteData.workspaceId}`).emit('note_updated', {
           ...updatedNote,
-          updatedBy: user.username,
+          updatedBy: user.name,
         });
 
         // Log activity
@@ -230,14 +226,13 @@ export const initializeWebSocket = (server: HTTPServer) => {
         const message = await prisma.chatMessage.create({
           data: {
             content: data.content,
-            userId: user.id,
-            workspaceId: data.workspaceId || null,
+            authorId: user.id,
           },
           include: {
-            user: {
+            author: {
               select: {
                 id: true,
-                username: true,
+                email: true,
                 name: true,
                 image: true,
                 role: true,
@@ -249,11 +244,11 @@ export const initializeWebSocket = (server: HTTPServer) => {
         const chatMessage: ChatMessage = {
           id: message.id,
           content: message.content,
-          userId: message.userId,
-          username: message.user.username,
-          userImage: message.user.image || undefined,
-          userRole: message.user.role,
-          workspaceId: message.workspaceId || undefined,
+          userId: message.authorId,
+          username: message.author.name || message.author.email || 'Unknown',
+          userImage: message.author.image || undefined,
+          userRole: message.author.role,
+          workspaceId: undefined, // ChatMessage doesn't have workspaceId in our schema
           createdAt: message.createdAt.toISOString(),
         };
 
@@ -274,7 +269,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
       const room = data.workspaceId ? `workspace:${data.workspaceId}` : 'public_chat';
       socket.to(room).emit('user_typing', {
         userId: user.id,
-        username: user.username,
+        username: user.name,
         isTyping: true,
       });
     });
@@ -286,7 +281,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
       const room = data.workspaceId ? `workspace:${data.workspaceId}` : 'public_chat';
       socket.to(room).emit('user_typing', {
         userId: user.id,
-        username: user.username,
+        username: user.name,
         isTyping: false,
       });
     });
@@ -295,7 +290,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
     socket.on('disconnect', async () => {
       const user = activeUsers.get(socket.id);
       if (user) {
-        console.log('User disconnected:', user.username);
+        console.log('User disconnected:', user.name);
 
         // Remove from workspace users
         if (user.workspaceId) {
@@ -310,7 +305,7 @@ export const initializeWebSocket = (server: HTTPServer) => {
           // Notify others in workspace
           socket.to(`workspace:${user.workspaceId}`).emit('user_left', {
             userId: user.id,
-            username: user.username,
+            username: user.name,
           });
         }
 

@@ -23,38 +23,39 @@ const moderatorRoutes = [
   '/api/admin/users', // User management for moderators
 ];
 
-async function checkSetupStatus(request: NextRequest): Promise<boolean> {
+async function checkSetupStatus(): Promise<boolean> {
   try {
-    const setupResponse = await fetch(new URL('/api/setup', request.url));
-    const { setupRequired } = await setupResponse.json();
-    return setupRequired;
+    // Import prisma directly to avoid fetch loop
+    const { prisma } = await import('./lib/prisma');
+    const { UserRole } = await import('@prisma/client');
+    
+    const adminCount = await prisma.user.count({
+      where: {
+        role: UserRole.ADMIN,
+      },
+    });
+    
+    return adminCount === 0;
   } catch (error) {
     console.error('Error checking setup status:', error);
     return false;
   }
 }
 
-async function checkMaintenanceMode(request: NextRequest): Promise<{ enabled: boolean; message?: string }> {
+async function checkMaintenanceMode(): Promise<{ enabled: boolean; message?: string }> {
   try {
-    const response = await fetch(new URL('/api/admin/settings', request.url), {
-      headers: {
-        'Authorization': request.headers.get('Authorization') || '',
-        'Cookie': request.headers.get('Cookie') || '',
-      },
-    });
+    // Import prisma directly to avoid fetch loop
+    const { prisma } = await import('./lib/prisma');
     
-    if (response.ok) {
-      const { settings } = await response.json();
-      return {
-        enabled: settings?.maintenanceMode || false,
-        message: settings?.maintenanceMessage || 'System is under maintenance. Please try again later.',
-      };
-    }
+    const settings = await prisma.systemSettings.findFirst();
+    return {
+      enabled: settings?.maintenanceMode || false,
+      message: settings?.maintenanceMessage || 'System is under maintenance. Please try again later.',
+    };
   } catch (error) {
     console.error('Error checking maintenance mode:', error);
+    return { enabled: false };
   }
-  
-  return { enabled: false };
 }
 
 export async function middleware(request: NextRequest) {
@@ -64,6 +65,8 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/setup') ||
+    pathname.startsWith('/api/admin/settings') ||
     pathname === '/favicon.ico' ||
     pathname.startsWith('/uploads/') ||
     pathname.includes('.')
@@ -71,62 +74,68 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check setup status first
-  const setupRequired = await checkSetupStatus(request);
-  
-  if (setupRequired && pathname !== '/setup') {
-    return NextResponse.redirect(new URL('/setup', request.url));
-  }
-  
-  if (!setupRequired && pathname === '/setup') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Skip further checks if setup is required
-  if (setupRequired) {
-    return NextResponse.next();
-  }
-
-  // Get user token
-  const token = await getToken({ req: request });
-
-  // Check maintenance mode
-  const maintenance = await checkMaintenanceMode(request);
-  
-  if (maintenance.enabled) {
-    // Allow admins to access during maintenance
-    if (token?.sub) {
-      // For API routes, we'll check role in the API itself
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.next();
-      }
-      
-      // For UI routes, redirect non-admins to maintenance page
-      if (!maintenanceExemptRoutes.some(route => pathname.startsWith(route))) {
-        // We'll assume non-admin for UI and let the maintenance page handle it
-        return NextResponse.redirect(new URL('/maintenance', request.url));
-      }
-    } else {
-      // Redirect unauthenticated users to maintenance page
-      if (!maintenanceExemptRoutes.some(route => pathname.startsWith(route))) {
-        return NextResponse.redirect(new URL('/maintenance', request.url));
-      }
-    }
-  }
-
-  // Check admin routes
-  if (adminRoutes.some(route => pathname.startsWith(route))) {
-    if (!token?.sub) {
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-      return NextResponse.redirect(new URL('/auth/signin', request.url));
+  try {
+    // Check setup status first
+    const setupRequired = await checkSetupStatus();
+    
+    if (setupRequired && pathname !== '/setup') {
+      return NextResponse.redirect(new URL('/setup', request.url));
     }
     
-    // Role checking will be done in the API routes themselves for better error handling
-  }
+    if (!setupRequired && pathname === '/setup') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
 
-  return NextResponse.next();
+    // Skip further checks if setup is required
+    if (setupRequired) {
+      return NextResponse.next();
+    }
+
+    // Get user token
+    const token = await getToken({ req: request });
+
+    // Check maintenance mode
+    const maintenance = await checkMaintenanceMode();
+    
+    if (maintenance.enabled) {
+      // Allow admins to access during maintenance
+      if (token?.sub) {
+        // For API routes, we'll check role in the API itself
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.next();
+        }
+        
+        // For UI routes, redirect non-admins to maintenance page
+        if (!maintenanceExemptRoutes.some(route => pathname.startsWith(route))) {
+          // We'll assume non-admin for UI and let the maintenance page handle it
+          return NextResponse.redirect(new URL('/maintenance', request.url));
+        }
+      } else {
+        // Redirect unauthenticated users to maintenance page
+        if (!maintenanceExemptRoutes.some(route => pathname.startsWith(route))) {
+          return NextResponse.redirect(new URL('/maintenance', request.url));
+        }
+      }
+    }
+
+    // Check admin routes
+    if (adminRoutes.some(route => pathname.startsWith(route))) {
+      if (!token?.sub) {
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        return NextResponse.redirect(new URL('/auth/signin', request.url));
+      }
+      
+      // Role checking will be done in the API routes themselves for better error handling
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Middleware error:', error);
+    // On error, allow the request to proceed to avoid blocking the app
+    return NextResponse.next();
+  }
 }
 
 export const config = {

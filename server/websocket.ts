@@ -84,7 +84,7 @@ export class WebSocketServer {
           where: { id: decoded.sub },
           select: {
             id: true,
-            username: true,
+            email: true,
             name: true,
             image: true,
             role: true,
@@ -97,7 +97,13 @@ export class WebSocketServer {
         }
 
         socket.userId = user.id;
-        socket.user = user;
+        socket.user = {
+          id: user.id,
+          username: user.name || user.email || 'Unknown',
+          name: user.name || undefined,
+          image: user.image || undefined,
+          role: user.role
+        };
         
         next();
       } catch (error) {
@@ -218,7 +224,7 @@ export class WebSocketServer {
               workspaceId: data.workspaceId,
               metadata: {
                 noteId: data.noteId,
-                updates: data,
+                updates: JSON.parse(JSON.stringify(data)),
                 realTime: true
               }
             }
@@ -324,15 +330,14 @@ export class WebSocketServer {
           const chatMessage = await prisma.chatMessage.create({
             data: {
               content: data.message,
-              userId: socket.userId!,
-              workspaceId: data.workspaceId,
-              type: data.type === 'workspace' ? 'WORKSPACE' : 'PUBLIC'
+              authorId: socket.userId!,
+              type: 'TEXT'
             },
             include: {
-              user: {
+              author: {
                 select: {
                   id: true,
-                  username: true,
+                  email: true,
                   name: true,
                   image: true,
                   role: true
@@ -346,7 +351,13 @@ export class WebSocketServer {
           this.io.to(room).emit('chat-message', {
             id: chatMessage.id,
             content: chatMessage.content,
-            user: chatMessage.user,
+            user: {
+              id: chatMessage.author.id,
+              username: chatMessage.author.name || chatMessage.author.email || 'Unknown',
+              name: chatMessage.author.name,
+              image: chatMessage.author.image,
+              role: chatMessage.author.role
+            },
             timestamp: chatMessage.createdAt.toISOString(),
             type: data.type
           });

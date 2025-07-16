@@ -160,6 +160,7 @@ class PWAManager {
   async requestBackgroundSync(tag: string) {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       const registration = await navigator.serviceWorker.ready;
+      // @ts-ignore - sync is not in the standard types yet
       await registration.sync.register(tag);
     }
   }
@@ -261,22 +262,42 @@ let pwaManager: PWAManager | null = null;
 export const getPWAManager = (): PWAManager => {
   if (typeof window === 'undefined') {
     // Return a mock object for SSR
-    return {
-      installApp: async () => false,
-      canInstall: () => false,
-      isAppInstalled: () => false,
-      isAppOnline: () => true,
-      cacheNote: async () => {},
-      clearCache: async () => {},
-      requestBackgroundSync: async () => {},
-      requestNotificationPermission: async () => 'denied' as NotificationPermission,
-      subscribeToPushNotifications: async () => null,
-      onInstallAvailable: () => {},
-      onInstalled: () => {},
-      onUpdateAvailable: () => {},
-      onOnline: () => {},
-      onOffline: () => {},
-    } as PWAManager;
+    return new (class MockPWAManager {
+      private deferredPrompt = null;
+      private isInstalled = false;
+      private isOnline = true;
+      private onlineCallbacks: (() => void)[] = [];
+      private offlineCallbacks: (() => void)[] = [];
+      private installAvailableCallbacks: (() => void)[] = [];
+      private installedCallbacks: (() => void)[] = [];
+      private updateAvailableCallbacks: (() => void)[] = [];
+
+      async installApp() { return false; }
+      canInstall() { return false; }
+      isAppInstalled() { return false; }
+      isAppOnline() { return true; }
+      async cacheNote() {}
+      async clearCache() {}
+      async requestBackgroundSync() {}
+      async requestNotificationPermission(): Promise<NotificationPermission> { return 'denied'; }
+      async subscribeToPushNotifications() { return null; }
+      onInstallAvailable() {}
+      onInstalled() {}
+      onUpdateAvailable() {}
+      onOnline() {}
+      onOffline() {}
+      
+      private init() {}
+      private checkInstallStatus() {}
+      private notifyInstallAvailable() {}
+      private notifyInstalled() {}
+      private notifyUpdateAvailable() {}
+      private async registerServiceWorker() {}
+      private handleServiceWorkerMessage() {}
+      private urlBase64ToUint8Array() { return new Uint8Array(); }
+      private notifyCacheUpdated() {}
+      private notifyOfflineReady() {}
+    })() as unknown as PWAManager;
   }
 
   if (!pwaManager) {

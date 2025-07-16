@@ -1,78 +1,38 @@
-import { User, Note, Trade, Portfolio, Activity, Notification } from '@prisma/client';
+import { User, Note, Activity, Workspace, WorkspaceMember } from '@prisma/client';
 
 export type UserWithRelations = User & {
   notes: Note[];
-  trades: Trade[];
-  portfolios: Portfolio[];
   activities: Activity[];
-  notifications: Notification[];
+  workspaces: Workspace[];
+  workspaceMembers: WorkspaceMember[];
 };
 
 export type NoteWithAuthor = Note & {
   author: User;
 };
 
-export type TradeWithUser = Trade & {
-  user: User;
-};
-
-export type PortfolioWithNote = Portfolio & {
-  note: Note;
-};
-
 export interface DashboardStats {
   totalUsers: number;
   totalNotes: number;
-  totalTrades: number;
-  totalVolume: number;
+  totalWorkspaces: number;
   activeUsers: number;
   topNotes: NoteWithAuthor[];
-  recentTrades: TradeWithUser[];
+  recentActivities: Activity[];
   userGrowth: { date: string; users: number }[];
-  volumeData: { date: string; volume: number }[];
-}
-
-export interface MarketData {
-  notes: (Note & { 
-    author: User;
-    currentPrice: number;
-    priceChange24h: number;
-    volume24h: number;
-    marketCap: number;
-  })[];
-  totalMarketCap: number;
-  totalVolume24h: number;
-  topGainers: Note[];
-  topLosers: Note[];
-}
-
-export interface LiveTrade {
-  id: string;
-  type: 'BUY' | 'SELL';
-  noteTitle: string;
-  amount: number;
-  price: number;
-  username: string;
-  timestamp: Date;
+  noteGrowth: { date: string; notes: number }[];
 }
 
 export interface UserStats {
-  balance: number;
-  totalEarnings: number;
-  totalLosses: number;
-  netProfit: number;
-  level: number;
-  experience: number;
-  rank: number;
-  portfolioValue: number;
-  totalTrades: number;
-  winRate: number;
+  totalNotes: number;
+  totalWorkspaces: number;
+  collaborations: number;
+  recentActivity: Activity[];
 }
 
 export interface AdminUser extends User {
   _count: {
     notes: number;
-    trades: number;
+    workspaces: number;
   };
   lastActivity?: Date;
 }
@@ -89,7 +49,7 @@ export interface SystemMetrics {
 export interface NotificationSettings {
   emailNotifications: boolean;
   pushNotifications: boolean;
-  tradeAlerts: boolean;
+  collaborationAlerts: boolean;
   systemUpdates: boolean;
   marketingEmails: boolean;
 }
@@ -109,19 +69,11 @@ export interface UpdateNoteData extends Partial<CreateNoteData> {
   isArchived?: boolean;
 }
 
-export interface TradeData {
+export interface CollaborationData {
+  workspaceId: string;
   noteId: string;
-  type: 'BUY' | 'SELL';
-  amount: number;
-  price: number;
-}
-
-export interface LeaderboardEntry {
-  user: User;
-  rank: number;
-  score: number;
-  change: number;
-  badge?: string;
+  action: 'EDIT' | 'COMMENT' | 'SHARE';
+  data: any;
 }
 
 export interface SearchFilters {
@@ -132,7 +84,7 @@ export interface SearchFilters {
   author?: string;
   dateFrom?: Date;
   dateTo?: Date;
-  sortBy?: 'created' | 'updated' | 'title' | 'marketCap' | 'volume';
+  sortBy?: 'created' | 'updated' | 'title' | 'author';
   sortOrder?: 'asc' | 'desc';
 }
 

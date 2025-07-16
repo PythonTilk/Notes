@@ -308,8 +308,8 @@ export const ConnectedNotes: React.FC<ConnectedNotesProps> = ({
               {/* Connection label */}
               {connection.label && (
                 <text
-                  x={(getNoteBounds(connection.fromId)?.centerX || 0 + getNoteBounds(connection.toId)?.centerX || 0) / 2}
-                  y={(getNoteBounds(connection.fromId)?.centerY || 0 + getNoteBounds(connection.toId)?.centerY || 0) / 2 - 20}
+                  x={((getNoteBounds(connection.fromId)?.centerX || 0) + (getNoteBounds(connection.toId)?.centerX || 0)) / 2}
+                  y={((getNoteBounds(connection.fromId)?.centerY || 0) + (getNoteBounds(connection.toId)?.centerY || 0)) / 2 - 20}
                   textAnchor="middle"
                   className="text-xs fill-gray-600 pointer-events-auto cursor-pointer"
                   onClick={(e) => {

@@ -19,56 +19,61 @@ async function main() {
       data: {
         email: 'admin@notevault.com',
         name: 'Admin User',
-        username: 'admin',
         password: hashedPassword,
         role: UserRole.ADMIN,
         bio: 'System Administrator',
-        balance: 100000.0, // Admin gets more starting balance
-        level: 10,
-        experience: 10000,
       },
     });
 
     console.log('✅ Admin user created:', adminUser.email);
 
+    // Create a default workspace for the admin
+    const defaultWorkspace = await prisma.workspace.create({
+      data: {
+        name: 'My Workspace',
+        description: 'Default workspace for getting started',
+        ownerId: adminUser.id,
+        members: {
+          create: {
+            userId: adminUser.id,
+            role: 'OWNER',
+          }
+        }
+      }
+    });
+
+    console.log('✅ Default workspace created:', defaultWorkspace.name);
+
     // Create some sample notes for the admin
     const sampleNotes = [
       {
         title: 'Welcome to NoteVault',
-        content: 'This is your new modern note-taking application with trading-style dashboard!',
+        content: 'This is your new modern note-taking application with collaborative features!',
         type: 'TEXT' as const,
-        visibility: 'PUBLIC' as const,
-        tags: ['welcome', 'getting-started'],
         color: '#00ff88',
-        marketCap: 1000000,
-        volume24h: 50000,
-        priceChange: 5.2,
+        workspaceId: defaultWorkspace.id,
       },
       {
-        title: 'Trading Dashboard Features',
-        content: `# Trading Dashboard Features
+        title: 'Collaboration Features',
+        content: `# Collaboration Features
 
-## Live Market Data
-- Real-time note valuations
-- 24h volume tracking
-- Price change indicators
+## Real-time Editing
+- Live collaborative editing
+- See other users' cursors
+- Instant synchronization
 
-## Portfolio Management
-- Track your note investments
-- View profit/loss
-- Portfolio analytics
+## Workspace Management
+- Create and manage workspaces
+- Invite team members
+- Role-based permissions
 
 ## Admin Features
 - User management
 - System monitoring
 - Analytics dashboard`,
         type: 'MARKDOWN' as const,
-        visibility: 'PUBLIC' as const,
-        tags: ['features', 'dashboard', 'admin'],
         color: '#0088ff',
-        marketCap: 750000,
-        volume24h: 25000,
-        priceChange: -2.1,
+        workspaceId: defaultWorkspace.id,
       },
       {
         title: 'Code Example',
@@ -86,12 +91,8 @@ const createUser = async (userData: Partial<User>) => {
   });
 };`,
         type: 'CODE' as const,
-        visibility: 'PRIVATE' as const,
-        tags: ['code', 'typescript', 'example'],
         color: '#8800ff',
-        marketCap: 500000,
-        volume24h: 15000,
-        priceChange: 12.5,
+        workspaceId: defaultWorkspace.id,
       },
     ];
 
@@ -118,7 +119,7 @@ const createUser = async (userData: Partial<User>) => {
 
     await prisma.activity.create({
       data: {
-        type: 'LEVEL_UP',
+        type: 'USER_ROLE_CHANGED',
         title: 'Admin Level Achieved',
         description: 'Reached admin level with full system access',
         userId: adminUser.id,
@@ -127,17 +128,7 @@ const createUser = async (userData: Partial<User>) => {
 
     console.log('📊 Sample activities created');
 
-    // Create a sample notification
-    await prisma.notification.create({
-      data: {
-        type: 'SYSTEM',
-        title: 'Welcome to NoteVault',
-        message: 'Your account has been set up successfully. Explore the trading-style dashboard!',
-        userId: adminUser.id,
-      },
-    });
-
-    console.log('🔔 Sample notification created');
+    console.log('✅ Sample data created successfully');
 
   } else {
     console.log(`👥 Found ${userCount} existing users, skipping seed`);

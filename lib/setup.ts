@@ -31,9 +31,6 @@ export async function createInitialAdmin(data: {
       email: data.email,
       password: hashedPassword,
       role: UserRole.ADMIN,
-      balance: 100000.0,
-      level: 10,
-      experience: 10000,
     },
   });
 }

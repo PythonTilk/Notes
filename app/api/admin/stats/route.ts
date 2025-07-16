@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       prisma.workspace.count(),
       prisma.workspace.count({
         where: {
-          isActive: true,
+          isDeleted: false,
         },
       }),
 
