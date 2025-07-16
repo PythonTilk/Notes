@@ -24,7 +24,6 @@ dist/
 *.sqlite
 *.sqlite3
 database.db
-prisma/migrations/
 
 # Logs
 logs/
